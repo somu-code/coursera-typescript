@@ -1,1 +1,1 @@
-E Learning Application
+Server
