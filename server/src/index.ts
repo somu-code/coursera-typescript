@@ -1,7 +1,7 @@
 import express, { json } from "express";
 
 const app = express();
-app.use(json());
+app.use(express.json());
 
 import { adminRouter } from "./routes/admin.js";
 import { userRouter } from "./routes/user.js";
