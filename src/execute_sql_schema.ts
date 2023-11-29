@@ -6,13 +6,16 @@ const client = new Client({
   password: "randompassword",
   host: "localhost",
   port: 5432,
-  database: "e-learning-application",
 });
 
 export async function excuteSqlSchema() {
   await client.connect();
+  const path = "./first.txt";
+  const data = fs.readFileSync(path, { encoding: "utf-8", flag: "r" });
+  console.log(data);
+
   client.query(
-    fs.readFileSync("../schema.sql", { encoding: "utf-8" }).toString(),
+    fs.readFileSync(path, { encoding: "utf-8", flag: "r" }).toString(),
     (err, res) => {
       if (err) {
         console.error(err);
