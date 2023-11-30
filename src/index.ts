@@ -1,13 +1,16 @@
 import express from "express";
+import { excuteSqlSchema } from "./execute_sql_schema.ts";
 
 const app = express();
 app.use(express.json());
 
-import { adminRouter } from "./routes/admin.js";
-import { userRouter } from "./routes/user.js";
+import { adminRouter } from "./routes/admin.ts";
+import { userRouter } from "./routes/user.ts";
 
 app.use("/admin", adminRouter);
 app.use("/user", userRouter);
+
+// excuteSqlSchema();
 
 app.get("/", async (req, res) => {
   try {
