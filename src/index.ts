@@ -1,4 +1,4 @@
-import express, {Request, Response}from "express";
+import express, { Request, Response } from "express";
 
 const app = express();
 app.use(express.json());
@@ -9,7 +9,7 @@ import { userRouter } from "./routes/user.ts";
 app.use("/admin", adminRouter);
 app.use("/user", userRouter);
 
-app.get("/", async (req:Request, res:Response) => {
+app.get("/", async (req: Request, res: Response) => {
   try {
     res.send("<h1>Hello, world!</h1>");
   } catch (error) {
@@ -17,6 +17,8 @@ app.get("/", async (req:Request, res:Response) => {
   }
 });
 
-app.listen(8080, () => {
-  console.log(`Express server is listening on http://localhost:8080`);
+app.listen(process.env.PORT, () => {
+  console.log(
+    `Express server is listening on http://localhost:${process.env.PORT}`
+  );
 });
