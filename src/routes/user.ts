@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { Prisma } from "@prisma/client";
+
 import { prisma } from "../prismaClient";
 import bcrypt from "bcrypt";
 
@@ -8,12 +8,12 @@ export const userRouter = Router();
 userRouter.get("/", async (req, res) => {
   try {
     res.status(200).send("<h1>User api</h1>");
-  } catch (error) {}
+  } catch (error) { }
 });
 
 userRouter.post("/signup", async (req, res) => {
   try {
-    const { email, password } = await req.body;
+    const { email, password } = await req.body
     const userEmail = await prisma.user.findFirst({
       where: { email: email },
     });
