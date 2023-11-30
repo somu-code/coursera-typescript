@@ -10,7 +10,7 @@ const client = new Client({
 
 export async function excuteSqlSchema() {
   await client.connect();
-  const path = "./first.txt";
+  const path = "../schema.sql";
   const data = fs.readFileSync(path, { encoding: "utf-8", flag: "r" });
   console.log(data);
 
