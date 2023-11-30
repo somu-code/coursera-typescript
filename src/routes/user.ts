@@ -1,4 +1,6 @@
 import { Router } from "express";
+import { Prisma } from "@prisma/client";
+import { prisma } from "../prismaClient";
 
 export const userRouter = Router();
 
@@ -11,11 +13,18 @@ userRouter.get("/", async (req, res) => {
 userRouter.post("/signup", async (req, res) => {
   try {
     const { email, password } = await req.body;
+    await prisma.user.create({
+      data: {
+        email: email,
+        password: password,
+      },
+    });
+    await prisma.$disconnect();
     res.json({
-      email,
-      password,
+      message: "User created successfully",
     });
   } catch (error) {
+    await prisma.$disconnect();
     res.sendStatus(500);
   }
 });
