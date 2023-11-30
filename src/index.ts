@@ -1,11 +1,16 @@
 import express, { Request, Response } from "express";
 import dotenv from "dotenv";
+import path from "path";
+import { adminRouter } from "./routes/admin.ts";
+import { userRouter } from "./routes/user.ts";
+
+dotenv.config({
+  override: true,
+  path: path.join(__dirname, "../.env"),
+});
 
 const app = express();
 app.use(express.json());
-
-import { adminRouter } from "./routes/admin.ts";
-import { userRouter } from "./routes/user.ts";
 
 app.use("/admin", adminRouter);
 app.use("/user", userRouter);
