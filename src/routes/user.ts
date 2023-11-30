@@ -37,3 +37,33 @@ userRouter.post("/signup", async (req, res) => {
     res.sendStatus(500);
   }
 });
+
+userRouter.post("/signin", async (req, res) => {
+  try {
+    const { email, password } = await req.body;
+    const userEmail = await prisma.user.findFirst({
+      where: { email: email },
+    });
+    if (!userEmail) {
+      return res.status(404).json({ message: "User email not found" });
+    }
+    const userFromDatabase = await prisma.user.findFirst({
+      where: {
+        email: email,
+      },
+    });
+    await prisma.$disconnect();
+    const isPasswordMatch = await bcrypt.compare(
+      password,
+      userFromDatabase!.password
+    );
+    if (!isPasswordMatch) {
+      return res.status(401).json({ message: "Invalid password" });
+    } else {
+      return res.json({ message: "Logged in successfully", email });
+    }
+  } catch (error) {
+    await prisma.$disconnect();
+    res.sendStatus(500);
+  }
+});
