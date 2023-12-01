@@ -47,9 +47,10 @@ userRouter.post("/signup", async (req: Request, res: Response) => {
   }
 });
 
-userRouter.post("/signin", async (req, res) => {
+userRouter.post("/signin", async (req: Request, res: Response) => {
   try {
-    const { email, password } = await req.body;
+    const { email, password }: { email: string; password: string } =
+      await req.body;
     const userData = await prisma.user.findFirst({
       where: { email: email },
     });

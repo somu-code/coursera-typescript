@@ -3,7 +3,6 @@ import jwt from "jsonwebtoken";
 export function generateUserJWT(email: string) {
   console.log(email);
   const payload = { email, role: "user" };
-  console.log(payload);
   return jwt.sign(payload, process.env.USER_TOKEN_SECRET!, {
     expiresIn: process.env.TOKEN_EXPIRY!,
     algorithm: "RS256",
