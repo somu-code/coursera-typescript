@@ -2,22 +2,23 @@ import { Router } from "express";
 
 import { prisma } from "../prismaClient";
 import bcrypt from "bcrypt";
+import { generateUserJWT } from "../jwt-auth/user-auth";
 
 export const userRouter = Router();
 
 userRouter.get("/", async (req, res) => {
   try {
     res.status(200).send("<h1>User api</h1>");
-  } catch (error) { }
+  } catch (error) {}
 });
 
 userRouter.post("/signup", async (req, res) => {
   try {
-    const { email, password } = await req.body
-    const userEmail = await prisma.user.findFirst({
+    const { email, password } = await req.body;
+    const userData = await prisma.user.findFirst({
       where: { email: email },
     });
-    if (userEmail) {
+    if (userData) {
       await prisma.$disconnect();
       return res.status(403).json({ message: "User email already exists" });
     }
@@ -41,10 +42,10 @@ userRouter.post("/signup", async (req, res) => {
 userRouter.post("/signin", async (req, res) => {
   try {
     const { email, password } = await req.body;
-    const userEmail = await prisma.user.findFirst({
+    const userData = await prisma.user.findFirst({
       where: { email: email },
     });
-    if (!userEmail) {
+    if (!userData) {
       return res.status(404).json({ message: "User email not found" });
     }
     const userFromDatabase = await prisma.user.findFirst({
@@ -60,6 +61,26 @@ userRouter.post("/signin", async (req, res) => {
     if (!isPasswordMatch) {
       return res.status(401).json({ message: "Invalid password" });
     } else {
+      console.log("This line runs");
+      const userToken = generateUserJWT(email);
+      console.log("This of code does not runs");
+      console.log(userToken);
+      res.cookie("accessToken", userToken, {
+        domain: "localhost",
+        path: "/",
+        maxAge: 60 * 60 * 1000,
+        httpOnly: true,
+        secure: true,
+        sameSite: "strict",
+      });
+
+      res.cookie("loggedIn", true, {
+        domain: "localhost",
+        path: "/",
+        maxAge: 60 * 60 * 1000,
+        secure: true,
+        sameSite: "strict",
+      });
       return res.json({ message: "Logged in successfully", email });
     }
   } catch (error) {
@@ -67,3 +88,12 @@ userRouter.post("/signin", async (req, res) => {
     res.sendStatus(500);
   }
 });
+
+// userRouter.get("/profile", authenticateUserJWT, async (req, res) => {
+//   try {
+//     const user = req.user;
+//     res.json({ email: user.email });
+//   } catch (error) {
+//     res.sendStatus(500);
+//   }
+// });
