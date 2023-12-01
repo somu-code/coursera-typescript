@@ -1,4 +1,4 @@
-import express, { Request, Response } from "express";
+import express, { Request, Response, Express } from "express";
 import dotenv from "dotenv";
 import path from "path";
 import { adminRouter } from "./routes/admin.ts";
@@ -9,7 +9,7 @@ dotenv.config({
   path: path.join(__dirname, "../.env"),
 });
 
-const app = express();
+const app: Express = express();
 app.use(express.json());
 
 app.use("/admin", adminRouter);

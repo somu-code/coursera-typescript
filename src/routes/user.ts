@@ -1,28 +1,36 @@
-import { Router } from "express";
+import { Router, Request, Response } from "express";
 
 import { prisma } from "../prismaClient";
 import bcrypt from "bcrypt";
 import { generateUserJWT } from "../jwt-auth/user-auth";
 
-export const userRouter = Router();
+export const userRouter: Router = Router();
 
-userRouter.get("/", async (req, res) => {
+userRouter.get("/", async (req: Request, res: Response) => {
   try {
     res.status(200).send("<h1>User api</h1>");
-  } catch (error) {}
+  } catch (error) {
+    res.sendStatus(500);
+  }
 });
 
-userRouter.post("/signup", async (req, res) => {
+userRouter.post("/signup", async (req: Request, res: Response) => {
   try {
-    const { email, password } = await req.body;
-    const userData = await prisma.user.findFirst({
+    const { email, password }: { email: string; password: string } =
+      await req.body;
+    const userData: {
+      id: number;
+      email: string;
+      name: string | null;
+      password: string;
+    } | null = await prisma.user.findFirst({
       where: { email: email },
     });
     if (userData) {
       await prisma.$disconnect();
       return res.status(403).json({ message: "User email already exists" });
     }
-    const hashedPassword = await bcrypt.hash(password, 8);
+    const hashedPassword: string = await bcrypt.hash(password, 8);
     await prisma.user.create({
       data: {
         email: email,
@@ -62,7 +70,7 @@ userRouter.post("/signin", async (req, res) => {
       return res.status(401).json({ message: "Invalid password" });
     } else {
       console.log("This line runs");
-      const userToken = generateUserJWT(email);
+      const userToken = await generateUserJWT(email);
       console.log("This of code does not runs");
       console.log(userToken);
       res.cookie("accessToken", userToken, {

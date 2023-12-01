@@ -6,6 +6,7 @@ export function generateUserJWT(email: string) {
   console.log(payload);
   return jwt.sign(payload, process.env.USER_TOKEN_SECRET!, {
     expiresIn: process.env.TOKEN_EXPIRY!,
+    algorithm: "RS256",
   });
 }
 
