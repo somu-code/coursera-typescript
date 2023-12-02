@@ -5,7 +5,7 @@ export function generateUserJWT(email: string) {
   const payload = { email, role: "user" };
   return jwt.sign(payload, process.env.USER_TOKEN_SECRET!, {
     expiresIn: process.env.TOKEN_EXPIRY!,
-    algorithm: "RS256",
+    algorithm: "HS256",
   });
 }
 

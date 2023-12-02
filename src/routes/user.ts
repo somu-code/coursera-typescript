@@ -70,10 +70,7 @@ userRouter.post("/signin", async (req: Request, res: Response) => {
     if (!isPasswordMatch) {
       return res.status(401).json({ message: "Invalid password" });
     } else {
-      console.log("This line runs");
       const userToken = await generateUserJWT(email);
-      console.log("This of code does not runs");
-      console.log(userToken);
       res.cookie("accessToken", userToken, {
         domain: "localhost",
         path: "/",
