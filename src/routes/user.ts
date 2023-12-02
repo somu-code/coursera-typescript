@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import { prisma } from "../prismaClient";
 import bcrypt from "bcrypt";
-import { authenticateUserJWT, generateUserJWT } from "../jwt-auth/user-auth";
+import { generateUserJWT } from "../jwt-auth/user-auth";
 import { User } from "../custom-types/user-types";
 
 export const userRouter: Router = Router();
@@ -90,11 +90,11 @@ userRouter.post("/signin", async (req: Request, res: Response) => {
   }
 });
 
-userRouter.get("/profile", authenticateUserJWT, async (req, res) => {
-  try {
-    const user = req.user;
-    res.json({ email: user.email });
-  } catch (error) {
-    res.sendStatus(500);
-  }
-});
+// userRouter.get("/profile", authenticateUserJWT, async (req, res) => {
+//   try {
+//     const user = req.user;
+//     res.json({ email: user.email });
+//   } catch (error) {
+//     res.sendStatus(500);
+//   }
+// });
