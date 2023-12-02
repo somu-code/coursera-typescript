@@ -1,8 +1,8 @@
 import { Router, Request, Response } from "express";
-
 import { prisma } from "../prismaClient";
 import bcrypt from "bcrypt";
-import { generateUserJWT } from "../jwt-auth/user-auth";
+import { authenticateUserJWT, generateUserJWT } from "../jwt-auth/user-auth";
+import { User } from "../custom-types/user-types";
 
 export const userRouter: Router = Router();
 
@@ -18,12 +18,7 @@ userRouter.post("/signup", async (req: Request, res: Response) => {
   try {
     const { email, password }: { email: string; password: string } =
       await req.body;
-    const userData: {
-      id: number;
-      email: string;
-      name: string | null;
-      password: string;
-    } | null = await prisma.user.findFirst({
+    const userData: User = await prisma.user.findFirst({
       where: { email: email },
     });
     if (userData) {
@@ -51,7 +46,7 @@ userRouter.post("/signin", async (req: Request, res: Response) => {
   try {
     const { email, password }: { email: string; password: string } =
       await req.body;
-    const userData = await prisma.user.findFirst({
+    const userData: User = await prisma.user.findFirst({
       where: { email: email },
     });
     if (!userData) {
@@ -63,7 +58,7 @@ userRouter.post("/signin", async (req: Request, res: Response) => {
       },
     });
     await prisma.$disconnect();
-    const isPasswordMatch = await bcrypt.compare(
+    const isPasswordMatch: boolean = await bcrypt.compare(
       password,
       userFromDatabase!.password
     );
@@ -95,11 +90,11 @@ userRouter.post("/signin", async (req: Request, res: Response) => {
   }
 });
 
-// userRouter.get("/profile", authenticateUserJWT, async (req, res) => {
-//   try {
-//     const user = req.user;
-//     res.json({ email: user.email });
-//   } catch (error) {
-//     res.sendStatus(500);
-//   }
-// });
+userRouter.get("/profile", authenticateUserJWT, async (req, res) => {
+  try {
+    const user = req.user;
+    res.json({ email: user.email });
+  } catch (error) {
+    res.sendStatus(500);
+  }
+});
