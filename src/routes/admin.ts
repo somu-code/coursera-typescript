@@ -7,11 +7,31 @@ export const adminRouter = Router();
 
 adminRouter.get("/profile", async (req: Request, res: Response) => {
   try {
-    res.status(200).send("Admin api");
+    const admins = await prisma.admin.findMany()
+
+    res.status(200).send(admins);
   } catch (error) {
     res.sendStatus(500);
   }
 });
+
+adminRouter.get("/profile/:id", async (req: Request, res: Response) => {
+  try {
+
+    const id = req.params.id;
+    const singleAdmin = await prisma.admin.findUnique({
+      where: {
+        id: parseInt(id)
+      }
+    })
+
+    res.status(200).send(singleAdmin);
+  } catch (error) {
+    res.sendStatus(500);
+  }
+});
+
+
 adminRouter.post("/login", async (req: Request, res: Response) => {
   const { email, password, name } = req.body
   res.send({ Email: email, Name: name }).status(200)
@@ -38,3 +58,18 @@ adminRouter.post("/signup", async (req: Request, res: Response) => {
 }
 
 )
+adminRouter.delete("/:id", async (req: Request, res: Response) => {
+  try {
+    const id = req.params.id
+    const deletedAdmin = await prisma.admin.delete({
+      where: {
+        id: parseInt(id),
+      },
+
+    })
+    res.send(`Admin Deleted Successfully`).status(200)
+  } catch (error) {
+    console.log(error);
+    res.sendStatus(500)
+  }
+})
