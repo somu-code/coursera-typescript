@@ -55,7 +55,7 @@ userRouter.post("/signin", async (req: Request, res: Response) => {
     }
     const isPasswordMatch: boolean = await bcrypt.compare(
       password,
-      userData!.password
+      userData!.password,
     );
     if (!isPasswordMatch) {
       return res.status(401).json({ message: "Invalid password" });
