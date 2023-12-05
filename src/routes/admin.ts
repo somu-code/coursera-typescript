@@ -7,11 +7,15 @@ export const adminRouter = Router();
 
 adminRouter.get("/profile", async (req: Request, res: Response) => {
   try {
-    const admins = await prisma.admin.findMany()
+    const admin = await prisma.admin.findUnique({
+      where: {
+        email: req.params.email
+      }
+    })
 
 
 
-    res.status(200).send(admins);
+    res.status(200).send(admin);
 
   } catch (error) {
     res.sendStatus(500);

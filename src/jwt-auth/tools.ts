@@ -20,7 +20,7 @@ const verifyToken = (token: string) => {
             if (err) {
                 reject(err)
             }
-            //resolve(decodedToken!)
+            // resolve(decodedToken!)
         })
     })
 }
