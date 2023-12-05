@@ -49,18 +49,13 @@ userRouter.post("/signin", async (req: Request, res: Response) => {
     const userData: User = await prisma.user.findFirst({
       where: { email: email },
     });
+    await prisma.$disconnect();
     if (!userData) {
       return res.status(404).json({ message: "User email not found" });
     }
-    const userFromDatabase = await prisma.user.findFirst({
-      where: {
-        email: email,
-      },
-    });
-    await prisma.$disconnect();
     const isPasswordMatch: boolean = await bcrypt.compare(
       password,
-      userFromDatabase!.password
+      userData!.password
     );
     if (!isPasswordMatch) {
       return res.status(401).json({ message: "Invalid password" });
