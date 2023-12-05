@@ -10,22 +10,23 @@ export function generateUserJWT(email: string) {
   });
 }
 
-// export async function authenticateUserJWT(
-//   req: Request,
-//   res: Response,
-//   next: NextFunction
-// ) {
-//   const token = req.cookies.accessToken;
-//   if (token) {
-//     jwt.verify(token, process.env.USER_TOKEN_SECRET!, (error, user) => {
-//       if (error) {
-//         res.sendStatus(403);
-//       } else {
-//         req.user = user;
-//         next();
-//       }
-//     });
-//   } else {
-//     res.sendStatus(403);
-//   }
-// }
+export async function authenticateUserJWT(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  console.log(req);
+  const token: string = req.cookies.accessToken;
+  if (token) {
+    jwt.verify(token, process.env.USER_TOKEN_SECRET!, (err, decoded) => {
+      if (err) {
+        res.sendStatus(403);
+      } else {
+        console.log(decoded);
+        next();
+      }
+    });
+  } else {
+    res.sendStatus(403);
+  }
+}
