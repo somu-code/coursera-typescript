@@ -5,8 +5,6 @@ import { generateJWT } from "../jwt-auth/tools";
 
 export const adminRouter = Router();
 
-
-
 adminRouter.get("/profile", async (req: Request, res: Response) => {
   try {
     const admins = await prisma.admin.findMany()
@@ -78,7 +76,6 @@ adminRouter.post("/login", async (req: Request, res: Response) => {
 
 
 adminRouter.post("/signup", async (req: Request, res: Response) => {
-
   try {
     const { email, password, name }: { email: string, password: string, name: string } = req.body
     const hashedNewAdmin: string = await bcrypt.hash(password, 10);
@@ -90,7 +87,6 @@ adminRouter.post("/signup", async (req: Request, res: Response) => {
     res.status(201).send(`${name} has been created`)
     // console.log(newAdmin);
   } catch (error) {
-
     await prisma.$disconnect();
     res.sendStatus(500);
   }
