@@ -14,3 +14,9 @@ export enum Role {
   "user",
   "admin",
 }
+
+export type adminPayload = {
+  email: string;
+  role: Role;
+
+}
