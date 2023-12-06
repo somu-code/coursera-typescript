@@ -33,7 +33,7 @@ model Course {
   description String
   price       Int
   published   Boolean
-  imageUrl    String
+  imageUrl    String?
   author      Admin   @relation(fields: [authorId], references: [id])
   authorId    Int
 }

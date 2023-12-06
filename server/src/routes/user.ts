@@ -32,10 +32,10 @@ userRouter.post("/signup", async (req: Request, res: Response) => {
         password: hashedPassword,
       },
     });
+    await prisma.$disconnect();
     res.json({
       message: "User created successfully",
     });
-    await prisma.$disconnect();
   } catch (error) {
     await prisma.$disconnect();
     res.sendStatus(500);
@@ -55,7 +55,7 @@ userRouter.post("/signin", async (req: Request, res: Response) => {
     }
     const isPasswordMatch: boolean = await bcrypt.compare(
       password,
-      userData!.password
+      userData!.password,
     );
     if (!isPasswordMatch) {
       return res.status(401).json({ message: "Invalid password" });
@@ -91,6 +91,7 @@ userRouter.get("/profile", authenticateUserJWT, async (req, res) => {
     const userData: User = await prisma.user.findFirst({
       where: { email: decodedUser.email },
     });
+    await prisma.$disconnect();
     // take a look at this later.
 
     res.json({
@@ -99,6 +100,7 @@ userRouter.get("/profile", authenticateUserJWT, async (req, res) => {
       name: userData?.name,
     });
   } catch (error) {
+    await prisma.$disconnect();
     res.sendStatus(500);
   }
 });
@@ -108,7 +110,9 @@ userRouter.post("/logout", authenticateUserJWT, async (req, res) => {
     res.clearCookie("accessToken");
     res.clearCookie("loggedIn");
     res.json({ message: "Logged out successfully" });
-  } catch (error) {}
+  } catch (error) {
+    res.sendStatus(500);
+  }
 });
 
 userRouter.delete("/delete", authenticateUserJWT, async (req, res) => {
@@ -117,6 +121,7 @@ userRouter.delete("/delete", authenticateUserJWT, async (req, res) => {
     const userData: User = await prisma.user.findFirst({
       where: { email: decodedUser.email },
     });
+    await prisma.$disconnect();
     if (userData) {
       await prisma.user.delete({
         where: { id: userData.id },
@@ -126,6 +131,7 @@ userRouter.delete("/delete", authenticateUserJWT, async (req, res) => {
     res.clearCookie("loggedIn");
     res.json({ message: "User deleted successfully" });
   } catch (error) {
+    await prisma.$disconnect();
     res.sendStatus(500);
   }
 });
