@@ -8,7 +8,8 @@
     "format": "prettier --write \"**/*.{js,jsx,mjs,ts,tsx,mts,md}\"",
     "dev": "nodemon",
     "build": "tsc -b",
-    "migrate": "prisma migrate dev"
+    "migrate": "prisma migrate dev",
+    "generate": "prisma generate"
   },
   "keywords": [],
   "author": "",

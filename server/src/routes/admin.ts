@@ -1,114 +1,175 @@
 import { Router, Request, Response } from "express";
 import { prisma } from "../prismaClient";
 import bcrypt from "bcrypt";
-import { generateJWT } from "../jwt-auth/tools";
+import { authenticateAdminJWT, generateAdminJWT } from "../jwt-auth/admin-auth";
+import { Admin } from "../custom-types/admin-types";
+import { Course } from "../custom-types/course-types";
 
 export const adminRouter = Router();
 
-adminRouter.get("/profile", async (req: Request, res: Response) => {
-  try {
-    const admin = await prisma.admin.findUnique({
-      where: {
-        email: req.params.email
-      }
-    })
-
-
-
-    res.status(200).send(admin);
-
-  } catch (error) {
-    res.sendStatus(500);
-  }
-});
-
-adminRouter.get("/profile/:id", async (req: Request, res: Response) => {
-  try {
-
-    const id = req.params.id;
-    const singleAdmin = await prisma.admin.findUnique({
-      where: {
-        id: parseInt(id)
-      }
-    })
-
-    res.status(200).send(singleAdmin);
-  } catch (error) {
-    res.sendStatus(500);
-  }
-});
-
-
-adminRouter.post("/login", async (req: Request, res: Response) => {
-  const { email, password } = req.body
-
-  const admin = await prisma.admin.findUnique({
-    where: {
-      email: email
-    }
-  })
-  if (!admin) {
-    return res.status(404).json({ message: "Admin not found" })
-  } else {
-    const isPasswordMatch = await bcrypt.compare(password, admin.password)
-    if (!isPasswordMatch) {
-      return res.status(401).json({ message: "Invalid password" })
-    } else {
-      const token = await generateJWT(email)
-      res.cookie("accessToken", token, {
-        domain: "localhost",
-        path: "/",
-        maxAge: 60 * 60 * 1000,
-        httpOnly: true,
-        secure: true,
-        sameSite: "strict",
-      })
-      res.cookie("loggedIn", true, {
-        domain: "localhost",
-        path: "/",
-        maxAge: 60 * 60 * 1000,
-        secure: true,
-        sameSite: "strict",
-      })
-      return res.json({ message: "Logged in successfully" })
-
-    }
-
-  }
-});
-
-
-
 adminRouter.post("/signup", async (req: Request, res: Response) => {
   try {
-    const { email, password, name }: { email: string, password: string, name: string } = req.body
-    const hashedNewAdmin: string = await bcrypt.hash(password, 10);
-    const newAdmin = await prisma.admin.create({
+    const { email, password }: { email: string; password: string } =
+      await req.body;
+    const adminData: Admin = await prisma.admin.findFirst({
+      where: { email: email },
+    });
+    if (adminData) {
+      await prisma.$disconnect();
+      return res.status(403).json({ message: "Admin email already exists" });
+    }
+
+    const hashedPassword: string = await bcrypt.hash(password, 8);
+    await prisma.admin.create({
       data: {
-        email, name, password: hashedNewAdmin
-      }
-    })
-    res.status(201).send(`${name} has been created`)
-    // console.log(newAdmin);
+        email,
+        password: hashedPassword,
+      },
+    });
+    await prisma.$disconnect();
+    res.json({ message: "Admin created successfully" });
   } catch (error) {
     await prisma.$disconnect();
     res.sendStatus(500);
   }
-}
+});
 
-)
-adminRouter.delete("/:id", async (req: Request, res: Response) => {
+adminRouter.post("/signin", async (req: Request, res: Response) => {
   try {
-    const id = req.params.id
-    const deletedAdmin = await prisma.admin.delete({
+    const { email, password } = req.body;
+    const adminData: Admin = await prisma.admin.findUnique({
       where: {
-        id: parseInt(id),
+        email: email,
       },
-
-    })
-    res.send(`Admin Deleted Successfully`).status(200)
+    });
+    await prisma.$disconnect();
+    if (!adminData) {
+      return res.status(404).json({ message: "Admin email not found" });
+    } else {
+      const isPasswordMatch = await bcrypt.compare(
+        password,
+        adminData.password,
+      );
+      if (!isPasswordMatch) {
+        return res.status(401).json({ message: "Invalid password" });
+      } else {
+        const adminToken: string = generateAdminJWT(email);
+        res.cookie("accessToken", adminToken, {
+          domain: "localhost",
+          path: "/",
+          maxAge: 60 * 60 * 1000,
+          httpOnly: true,
+          secure: true,
+          sameSite: "strict",
+        });
+        res.cookie("loggedIn", true, {
+          domain: "localhost",
+          path: "/",
+          maxAge: 60 * 60 * 1000,
+          secure: true,
+          sameSite: "strict",
+        });
+        return res.json({ message: "Logged in successfully" });
+      }
+    }
   } catch (error) {
-    console.log(error);
-    res.sendStatus(500)
+    await prisma.$disconnect();
+    res.sendStatus(500);
   }
-})
+});
+
+adminRouter.get(
+  "/profile",
+  authenticateAdminJWT,
+  async (req: Request, res: Response) => {
+    try {
+      const decodedAdmin: decodedAdmin = req.decodedAdmin;
+      const adminData: Admin = await prisma.admin.findUnique({
+        where: {
+          email: decodedAdmin.email,
+        },
+      });
+      await prisma.$disconnect();
+      res.json({
+        email: adminData?.email,
+        name: adminData?.name,
+        role: adminData?.role,
+      });
+    } catch (error) {
+      await prisma.$disconnect();
+      res.sendStatus(500);
+    }
+  },
+);
+
+adminRouter.post(
+  "/logout",
+  authenticateAdminJWT,
+  async (req: Request, res: Response) => {
+    try {
+      res.clearCookie("accessToken");
+      res.clearCookie("loggedIn");
+      res.json({ message: "Logged out successfully" });
+    } catch (error) {
+      res.sendStatus(500);
+    }
+  },
+);
+
+adminRouter.delete(
+  "/delete",
+  authenticateAdminJWT,
+  async (req: Request, res: Response) => {
+    try {
+      const decodedAdmin: decodedAdmin = req.decodedAdmin;
+      await prisma.admin.delete({
+        where: {
+          email: decodedAdmin.email,
+        },
+      });
+      await prisma.$disconnect();
+      res.clearCookie("accessToken");
+      res.clearCookie("loggedIn");
+      res.json({ message: "Admin deleted successfully" });
+    } catch (error) {
+      await prisma.$disconnect();
+      res.sendStatus(500);
+    }
+  },
+);
+
+adminRouter.post(
+  "/create-course",
+  authenticateAdminJWT,
+  async (req: Request, res: Response) => {
+    try {
+      const courseData: Course = await req.body;
+      // const decodedAdmin: decodedAdmin = req.decodedAdmin;
+      // const adminId: number = decodedAdmin
+      const data = await prisma.course.create({
+        data: courseData,
+      });
+      await prisma.$disconnect();
+      res.json({
+        message: "Course created successfully",
+        courseData,
+      });
+    } catch (error) {
+      await prisma.$disconnect();
+      res.sendStatus(500);
+    }
+  },
+);
+
+// adminRouter.put(
+//   "/update",
+//   authenticateAdminJWT,
+//   async (req: Request, res: Response) => {
+//     try {
+//       const courseData: Course = await req.body;
+//       await prisma.course.update({
+//         where: { id: courseData.id },
+//       });
+//     } catch (error) {}
+//   }
+// );
