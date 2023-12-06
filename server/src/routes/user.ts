@@ -55,7 +55,7 @@ userRouter.post("/signin", async (req: Request, res: Response) => {
     }
     const isPasswordMatch: boolean = await bcrypt.compare(
       password,
-      userData!.password,
+      userData!.password
     );
     if (!isPasswordMatch) {
       return res.status(401).json({ message: "Invalid password" });
@@ -87,9 +87,8 @@ userRouter.post("/signin", async (req: Request, res: Response) => {
 
 userRouter.get("/profile", authenticateUserJWT, async (req, res) => {
   try {
-    // const user = req.user;
-    // res.json({ email: user.email });
-    res.json({ message: "hello" });
+    const decodedUser: decodedUser = req.decodedUser;
+    res.json({ email: decodedUser.email, role: decodedUser.role });
   } catch (error) {
     res.sendStatus(500);
   }

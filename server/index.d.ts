@@ -7,6 +7,6 @@ type decodedUser = {
 
 declare namespace Express {
   interface Request {
-    decodedUser?: decodedUser;
+    decodedUser: decodedUser;
   }
 }
