@@ -55,7 +55,7 @@ userRouter.post("/signin", async (req: Request, res: Response) => {
     }
     const isPasswordMatch: boolean = await bcrypt.compare(
       password,
-      userData!.password,
+      userData!.password
     );
     if (!isPasswordMatch) {
       return res.status(401).json({ message: "Invalid password" });
@@ -88,7 +88,16 @@ userRouter.post("/signin", async (req: Request, res: Response) => {
 userRouter.get("/profile", authenticateUserJWT, async (req, res) => {
   try {
     const decodedUser: decodedUser = req.decodedUser;
-    res.json({ email: decodedUser.email, role: decodedUser.role });
+    const userData: User = await prisma.user.findFirst({
+      where: { email: decodedUser.email },
+    });
+    // take a look at this later.
+
+    res.json({
+      email: userData?.email,
+      role: userData?.role,
+      name: userData?.name,
+    });
   } catch (error) {
     res.sendStatus(500);
   }

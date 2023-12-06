@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import { adminPayload } from "../custom-types/admin-types";
+import { NextFunction, Request, Response } from "express";
 
 export function generateAdminJWT(email: string) {
   const role = "Admin";
@@ -10,13 +11,22 @@ export function generateAdminJWT(email: string) {
   });
 }
 
-const verifyToken = (token: string) => {
-  const verifyTokenPromise: Promise<string> = new Promise((resolve, reject) => {
-    jwt.verify(token, process.env.JWT_SECRET!, (err, decodedToken) => {
+export async function authenticateAdminJWT(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const token: string = req.cookies.accessToken;
+  if (token) {
+    jwt.verify(token, process.env.ADMIN_TOKEN_SECRET!, (err, decoded) => {
       if (err) {
-        reject(err);
+        res.sendStatus(403);
+      } else {
+        req.decodedAdmin = decoded as decodedAdmin;
+        next();
       }
-      // resolve(decodedToken!)
     });
-  });
-};
+  } else {
+    res.sendStatus(403);
+  }
+}
