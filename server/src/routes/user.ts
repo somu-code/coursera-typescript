@@ -55,7 +55,7 @@ userRouter.post("/signin", async (req: Request, res: Response) => {
     }
     const isPasswordMatch: boolean = await bcrypt.compare(
       password,
-      userData!.password,
+      userData!.password
     );
     if (!isPasswordMatch) {
       return res.status(401).json({ message: "Invalid password" });
@@ -87,9 +87,35 @@ userRouter.post("/signin", async (req: Request, res: Response) => {
 
 userRouter.get("/profile", authenticateUserJWT, async (req, res) => {
   try {
-    // const user = req.user;
-    // res.json({ email: user.email });
-    res.json({ message: "hello" });
+    const decodedUser: decodedUser = req.decodedUser;
+    res.json({ email: decodedUser.email, role: decodedUser.role });
+  } catch (error) {
+    res.sendStatus(500);
+  }
+});
+
+userRouter.post("/logout", authenticateUserJWT, async (req, res) => {
+  try {
+    res.clearCookie("accessToken");
+    res.clearCookie("loggedIn");
+    res.json({ message: "Logged out successfully" });
+  } catch (error) {}
+});
+
+userRouter.delete("/delete", authenticateUserJWT, async (req, res) => {
+  try {
+    const decodedUser: decodedUser = req.decodedUser;
+    const userData: User = await prisma.user.findFirst({
+      where: { email: decodedUser.email },
+    });
+    if (userData) {
+      await prisma.user.delete({
+        where: { id: userData.id },
+      });
+    }
+    res.clearCookie("accessToken");
+    res.clearCookie("loggedIn");
+    res.json({ message: "User deleted successfully" });
   } catch (error) {
     res.sendStatus(500);
   }

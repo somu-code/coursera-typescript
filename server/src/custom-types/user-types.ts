@@ -7,10 +7,5 @@ export type User = {
 
 export type userPayload = {
   email: string;
-  role: Role;
+  role: string;
 };
-
-export enum Role {
-  "user",
-  "admin",
-}
