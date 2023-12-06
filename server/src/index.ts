@@ -1,6 +1,7 @@
 import express, { Request, Response, Express } from "express";
 import dotenv from "dotenv";
 import path from "path";
+import cookieParser from "cookie-parser";
 import { adminRouter } from "./routes/admin.ts";
 import { userRouter } from "./routes/user.ts";
 
@@ -8,9 +9,9 @@ dotenv.config({
   override: true,
   path: path.join(__dirname, "../.env"),
 });
-
 const app: Express = express();
 app.use(express.json());
+app.use(cookieParser("my-secret"));
 
 app.use("/admin", adminRouter);
 app.use("/user", userRouter);
