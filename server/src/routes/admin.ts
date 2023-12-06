@@ -84,32 +84,37 @@ adminRouter.get(
     }
   }
 );
-adminRouter.get("/profile/:id", async (req: Request, res: Response) => {
-  try {
-    const id = req.params.id;
-    const singleAdmin = await prisma.admin.findUnique({
-      where: {
-        id: parseInt(id),
-      },
-    });
 
-    res.status(200).send(singleAdmin);
-  } catch (error) {
-    res.sendStatus(500);
+adminRouter.post(
+  "/logout",
+  authenticateAdminJWT,
+  async (req: Request, res: Response) => {
+    try {
+      res.clearCookie("accessToken");
+      res.clearCookie("loggedIn");
+      res.json({ message: "Logged out successfully" });
+    } catch (error) {
+      res.sendStatus(500);
+    }
   }
-});
+);
 
-adminRouter.delete("/:id", async (req: Request, res: Response) => {
-  try {
-    const id = req.params.id;
-    const deletedAdmin = await prisma.admin.delete({
-      where: {
-        id: parseInt(id),
-      },
-    });
-    res.send(`Admin Deleted Successfully`).status(200);
-  } catch (error) {
-    console.log(error);
-    res.sendStatus(500);
+adminRouter.delete(
+  "/delete",
+  authenticateAdminJWT,
+  async (req: Request, res: Response) => {
+    try {
+      const decodedAdmin: decodedAdmin = req.decodedAdmin;
+      const deletedAdmin = await prisma.admin.delete({
+        where: {
+          email: decodedAdmin.email,
+        },
+      });
+      res.clearCookie("accessToken");
+      res.clearCookie("loggedIn");
+      res.json({ message: "Admin deleted successfully" });
+    } catch (error) {
+      res.sendStatus(500);
+    }
   }
-});
+);
