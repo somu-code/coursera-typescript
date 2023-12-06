@@ -93,3 +93,30 @@ userRouter.get("/profile", authenticateUserJWT, async (req, res) => {
     res.sendStatus(500);
   }
 });
+
+userRouter.post("/logout", authenticateUserJWT, async (req, res) => {
+  try {
+    res.clearCookie("accessToken");
+    res.clearCookie("loggedIn");
+    res.json({ message: "Logged out successfully" });
+  } catch (error) {}
+});
+
+userRouter.delete("/delete", authenticateUserJWT, async (req, res) => {
+  try {
+    const decodedUser: decodedUser = req.decodedUser;
+    const userData: User = await prisma.user.findFirst({
+      where: { email: decodedUser.email },
+    });
+    if (userData) {
+      await prisma.user.delete({
+        where: { id: userData.id },
+      });
+    }
+    res.clearCookie("accessToken");
+    res.clearCookie("loggedIn");
+    res.json({ message: "User deleted successfully" });
+  } catch (error) {
+    res.sendStatus(500);
+  }
+});
