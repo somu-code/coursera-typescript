@@ -37,8 +37,8 @@ model Course {
   published   Boolean
   imageUrl    String?
   price       Float
-  author      Admin    @relation(fields: [authorId], references: [id])
-  authorId    Int
+  admin       Admin    @relation(fields: [adminId], references: [id])
+  adminId     Int
   orders      Order[]
 }
 
