@@ -11,29 +11,31 @@ datasource db {
 }
 
 model Admin {
-  id       Int      @id @default(autoincrement())
-  email    String   @unique
-  name     String?
-  role     String   @default("admin")
-  password String
-  Course   Course[]
+  id             Int      @id @default(autoincrement())
+  email          String   @unique
+  hashedPassword String
+  name           String?
+  role           String   @default("admin")
+  Course         Course[]
 }
 
 model User {
-  id       Int     @id @default(autoincrement())
-  email    String  @unique
-  name     String?
-  role     String  @default("user")
-  password String
+  id             Int     @id @default(autoincrement())
+  email          String  @unique
+  hashedPassword String
+  name           String?
+  role           String  @default("user")
 }
 
 model Course {
-  id          Int     @id @default(autoincrement())
-  title       String
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now())
+  title       String   @db.VarChar(255)
   description String
-  price       Int
   published   Boolean
   imageUrl    String?
-  author      Admin   @relation(fields: [authorId], references: [id])
+  price       Float
+  author      Admin    @relation(fields: [authorId], references: [id])
   authorId    Int
 }
