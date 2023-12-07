@@ -3,7 +3,7 @@ export type Admin = {
   email: string;
   name: string | null;
   role: string;
-  password: string;
+  hashedPassword: string;
 } | null;
 
 export type adminPayload = {

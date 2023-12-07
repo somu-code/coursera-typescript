@@ -29,7 +29,7 @@ userRouter.post("/signup", async (req: Request, res: Response) => {
     await prisma.user.create({
       data: {
         email: email,
-        password: hashedPassword,
+        hashedPassword: hashedPassword,
       },
     });
     await prisma.$disconnect();
@@ -55,7 +55,7 @@ userRouter.post("/signin", async (req: Request, res: Response) => {
     }
     const isPasswordMatch: boolean = await bcrypt.compare(
       password,
-      userData!.password,
+      userData!.hashedPassword,
     );
     if (!isPasswordMatch) {
       return res.status(401).json({ message: "Invalid password" });

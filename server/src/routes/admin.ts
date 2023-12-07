@@ -23,7 +23,7 @@ adminRouter.post("/signup", async (req: Request, res: Response) => {
     await prisma.admin.create({
       data: {
         email,
-        password: hashedPassword,
+        hashedPassword: hashedPassword,
       },
     });
     await prisma.$disconnect();
@@ -48,7 +48,7 @@ adminRouter.post("/signin", async (req: Request, res: Response) => {
     } else {
       const isPasswordMatch = await bcrypt.compare(
         password,
-        adminData.password,
+        adminData.hashedPassword,
       );
       if (!isPasswordMatch) {
         return res.status(401).json({ message: "Invalid password" });
