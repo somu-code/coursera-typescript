@@ -173,11 +173,11 @@ adminRouter.put(
       await prisma.$disconnect();
       res.json({
         message: "Course updated successfully",
-        courseData
+        courseData,
       });
     } catch (error) {
       await prisma.$disconnect();
       res.sendStatus(500);
     }
-  }
+  },
 );
