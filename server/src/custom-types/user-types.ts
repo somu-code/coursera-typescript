@@ -3,7 +3,7 @@ export type User = {
   email: string;
   name: string | null;
   role: string;
-  password: string;
+  hashedPassword: string;
 } | null;
 
 export type userPayload = {
