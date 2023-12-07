@@ -161,15 +161,23 @@ adminRouter.post(
   },
 );
 
-// adminRouter.put(
-//   "/update",
-//   authenticateAdminJWT,
-//   async (req: Request, res: Response) => {
-//     try {
-//       const courseData: Course = await req.body;
-//       await prisma.course.update({
-//         where: { id: courseData.id },
-//       });
-//     } catch (error) {}
-//   }
-// );
+adminRouter.put(
+  "/update",
+  authenticateAdminJWT,
+  async (req: Request, res: Response) => {
+    try {
+      const courseData: Course = await req.body;
+      await prisma.course.update({
+        where: { id: courseData.id },
+      });
+      await prisma.$disconnect();
+      res.json({
+        message: "Course updated successfully",
+        courseData
+      });
+    } catch (error) {
+      await prisma.$disconnect();
+      res.sendStatus(500);
+    }
+  }
+);
