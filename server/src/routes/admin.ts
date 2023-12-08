@@ -2,7 +2,7 @@ import { Router, Request, Response } from "express";
 import { prisma } from "../prismaClient";
 import bcrypt from "bcrypt";
 import { authenticateAdminJWT, generateAdminJWT } from "../jwt-auth/admin-auth";
-import { Admin } from "../custom-types/admin-types";
+import { Admin, adminPayload } from "../custom-types/admin-types";
 import { Course } from "../custom-types/course-types";
 
 export const adminRouter = Router();
@@ -48,12 +48,14 @@ adminRouter.post("/signin", async (req: Request, res: Response) => {
     } else {
       const isPasswordMatch = await bcrypt.compare(
         password,
-        adminData.hashedPassword,
+        adminData.hashedPassword
       );
       if (!isPasswordMatch) {
         return res.status(401).json({ message: "Invalid password" });
       } else {
-        const adminToken: string = generateAdminJWT(email);
+        const { id, email, role } = adminData;
+        const adminPayload: adminPayload = { id, email, role };
+        const adminToken: string = generateAdminJWT(adminPayload);
         res.cookie("accessToken", adminToken, {
           domain: "localhost",
           path: "/",
@@ -99,7 +101,7 @@ adminRouter.get(
       await prisma.$disconnect();
       res.sendStatus(500);
     }
-  },
+  }
 );
 
 adminRouter.post(
@@ -113,7 +115,7 @@ adminRouter.post(
     } catch (error) {
       res.sendStatus(500);
     }
-  },
+  }
 );
 
 adminRouter.delete(
@@ -135,7 +137,7 @@ adminRouter.delete(
       await prisma.$disconnect();
       res.sendStatus(500);
     }
-  },
+  }
 );
 
 adminRouter.post(
@@ -143,41 +145,77 @@ adminRouter.post(
   authenticateAdminJWT,
   async (req: Request, res: Response) => {
     try {
-      const courseData: Course = await req.body;
-      // const decodedAdmin: decodedAdmin = req.decodedAdmin;
-      // const adminId: number = decodedAdmin
-      const data = await prisma.course.create({
-        data: courseData,
+      const {
+        title,
+        description,
+        published,
+        imageUrl,
+        price,
+      }: {
+        title: string;
+        description: string;
+        published: boolean;
+        imageUrl: string;
+        price: number;
+      } = await req.body;
+      const decodedAdmin: decodedAdmin = req.decodedAdmin;
+      const course: {
+        adminId: number;
+        title: string;
+        description: string;
+        published: boolean;
+        imageUrl: string;
+        price: number;
+      } = {
+        adminId: decodedAdmin.id,
+        title,
+        description,
+        published,
+        imageUrl,
+        price,
+      };
+      await prisma.course.create({
+        data: course,
       });
       await prisma.$disconnect();
-      res.json({
-        message: "Course created successfully",
-        courseData,
-      });
-    } catch (error) {
-      await prisma.$disconnect();
-      res.sendStatus(500);
-    }
-  },
-);
-
-adminRouter.put(
-  "/update",
-  authenticateAdminJWT,
-  async (req: Request, res: Response) => {
-    try {
-      const courseData: Course = await req.body;
-      await prisma.course.update({
-        where: { id: courseData.id },
-      });
-      await prisma.$disconnect();
-      res.json({
-        message: "Course updated successfully",
-        courseData
-      });
+      res.json({ message: "Course created successfully" });
     } catch (error) {
       await prisma.$disconnect();
       res.sendStatus(500);
     }
   }
 );
+
+adminRouter.put(
+  "/update-course",
+  authenticateAdminJWT,
+  async (req: Request, res: Response) => {
+    try {
+      const updatedCourse: Course = await req.body;
+      const decodedAdmin: decodedAdmin = req.decodedAdmin;
+      if (decodedAdmin.id === updatedCourse.adminId) {
+        await prisma.course.update({
+          where: {
+            id: updatedCourse.id,
+            adminId: decodedAdmin.id,
+          },
+          data: updatedCourse,
+        });
+        await prisma.$disconnect();
+        return res.json({ message: "Course updated successfully" });
+      } else {
+        return res
+          .status(403)
+          .json({ message: "The course does not belong to this admin." });
+      }
+    } catch (error) {
+      await prisma.$disconnect();
+      console.log(error);
+      res.sendStatus(500);
+    }
+  }
+);
+
+// delete-course
+// courses -courses owned by admin
+// get-all-coures

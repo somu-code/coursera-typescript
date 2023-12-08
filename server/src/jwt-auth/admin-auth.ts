@@ -2,10 +2,8 @@ import jwt from "jsonwebtoken";
 import { adminPayload } from "../custom-types/admin-types";
 import { NextFunction, Request, Response } from "express";
 
-export function generateAdminJWT(email: string) {
-  const role = "Admin";
-  const payload: adminPayload = { email, role };
-  return jwt.sign(payload, process.env.ADMIN_TOKEN_SECRET!, {
+export function generateAdminJWT(adminPayload: adminPayload) {
+  return jwt.sign(adminPayload, process.env.ADMIN_TOKEN_SECRET!, {
     expiresIn: process.env.TOKEN_EXPIRY!,
     algorithm: "HS256",
   });
@@ -14,7 +12,7 @@ export function generateAdminJWT(email: string) {
 export async function authenticateAdminJWT(
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) {
   const token: string = req.cookies.accessToken;
   if (token) {
