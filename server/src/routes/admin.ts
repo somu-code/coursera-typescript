@@ -145,7 +145,19 @@ adminRouter.post(
   authenticateAdminJWT,
   async (req: Request, res: Response) => {
     try {
-      const { title, description, published, imageUrl, price } = await req.body;
+      const {
+        title,
+        description,
+        published,
+        imageUrl,
+        price,
+      }: {
+        title: string;
+        description: string;
+        published: boolean;
+        imageUrl: string;
+        price: number;
+      } = await req.body;
       const decodedAdmin: decodedAdmin = req.decodedAdmin;
       const course: {
         adminId: number;
@@ -185,6 +197,7 @@ adminRouter.put(
         await prisma.course.update({
           where: {
             id: updatedCourse.id,
+            adminId: decodedAdmin.id,
           },
           data: updatedCourse,
         });
@@ -202,3 +215,7 @@ adminRouter.put(
     }
   }
 );
+
+// delete-course
+// courses -courses owned by admin
+// get-all-coures

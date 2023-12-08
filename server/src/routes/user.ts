@@ -135,3 +135,9 @@ userRouter.delete("/delete", authenticateUserJWT, async (req, res) => {
     res.sendStatus(500);
   }
 });
+
+//create-course
+//update-course
+//delte-course
+//courses --owned by admin
+// get-all-courses
