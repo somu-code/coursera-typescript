@@ -1,4 +1,4 @@
-import e, { Router, Request, Response } from "express";
+import { Router, Request, Response } from "express";
 import { prisma } from "../prismaClient";
 import bcrypt from "bcrypt";
 import { authenticateAdminJWT, generateAdminJWT } from "../jwt-auth/admin-auth";
@@ -166,7 +166,7 @@ adminRouter.post(
         data: course,
       });
       await prisma.$disconnect();
-      res.json({ message: "Course created successfully", course });
+      res.json({ message: "Course created successfully" });
     } catch (error) {
       await prisma.$disconnect();
       res.sendStatus(500);
@@ -174,28 +174,27 @@ adminRouter.post(
   }
 );
 
-// adminRouter.post(
-//   "/create-course",
-//   authenticateAdminJWT,
-//   async (req: Request, res: Response) => {
-//     try {
-//       const courseData: Course = await req.body;
-//       // const decodedAdmin: decodedAdmin = req.decodedAdmin;
-//       // const adminId: number = decodedAdmin
-//       const data = await prisma.course.create({
-//         data: courseData,
-//       });
-//       await prisma.$disconnect();
-//       res.json({
-//         message: "Course created successfully",
-//         courseData,
-//       });
-//     } catch (error) {
-//       await prisma.$disconnect();
-//       res.sendStatus(500);
-//     }
-//   },
-// );
+adminRouter.put(
+  "/update-course",
+  authenticateAdminJWT,
+  async (req: Request, res: Response) => {
+    try {
+      const updatedCourse: Course = await req.body;
+      await prisma.course.update({
+        where: {
+          id: updatedCourse.id,
+        },
+        data: updatedCourse,
+      });
+      await prisma.$disconnect();
+      res.json({ message: "Course updated successfully" });
+    } catch (error) {
+      await prisma.$disconnect();
+      console.log(error);
+      res.sendStatus(500);
+    }
+  }
+);
 
 // adminRouter.put(
 //   "/update",

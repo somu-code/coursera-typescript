@@ -34,7 +34,7 @@ model Course {
   updatedAt   DateTime @default(now())
   title       String   @db.VarChar(255)
   description String
-  published   Boolean
+  published   Boolean  @default(false)
   imageUrl    String?
   price       Float
   admin       Admin    @relation(fields: [adminId], references: [id])

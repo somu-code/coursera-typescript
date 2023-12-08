@@ -5,5 +5,4 @@ export type Course = {
   published: boolean;
   imageUrl?: string;
   price: number;
-  adminId?: number;
 };
