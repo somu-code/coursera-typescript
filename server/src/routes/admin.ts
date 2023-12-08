@@ -48,7 +48,7 @@ adminRouter.post("/signin", async (req: Request, res: Response) => {
     } else {
       const isPasswordMatch = await bcrypt.compare(
         password,
-        adminData.hashedPassword
+        adminData.hashedPassword,
       );
       if (!isPasswordMatch) {
         return res.status(401).json({ message: "Invalid password" });
@@ -101,7 +101,7 @@ adminRouter.get(
       await prisma.$disconnect();
       res.sendStatus(500);
     }
-  }
+  },
 );
 
 adminRouter.post(
@@ -115,7 +115,7 @@ adminRouter.post(
     } catch (error) {
       res.sendStatus(500);
     }
-  }
+  },
 );
 
 adminRouter.delete(
@@ -137,7 +137,7 @@ adminRouter.delete(
       await prisma.$disconnect();
       res.sendStatus(500);
     }
-  }
+  },
 );
 
 adminRouter.post(
@@ -183,7 +183,7 @@ adminRouter.post(
       await prisma.$disconnect();
       res.sendStatus(500);
     }
-  }
+  },
 );
 
 adminRouter.put(
@@ -213,9 +213,72 @@ adminRouter.put(
       console.log(error);
       res.sendStatus(500);
     }
-  }
+  },
 );
 
-// delete-course
-// courses -courses owned by admin
-// get-all-coures
+adminRouter.delete(
+  "/delete-course",
+  authenticateAdminJWT,
+  async (req: Request, res: Response) => {
+    try {
+      const decodedAdmin: decodedAdmin = req.decodedAdmin;
+      const course: { id: number } = await req.body;
+      const currentCourse = await prisma.course.findFirst({
+        where: { id: course.id },
+      });
+      if (!currentCourse) {
+        return res.status(404).json({ message: "Course does not exists" });
+      }
+      if (currentCourse?.adminId === decodedAdmin.id) {
+        await prisma.course.delete({
+          where: { id: course.id },
+        });
+        await prisma.$disconnect();
+        res.json({ message: "Course deleted successfully" });
+      } else {
+        res
+          .status(403)
+          .json({ message: "The course does not belong to this admin." });
+      }
+    } catch (error) {
+      await prisma.$disconnect();
+      console.log(error);
+      res.sendStatus(500);
+    }
+  },
+);
+
+adminRouter.get(
+  "/courses",
+  authenticateAdminJWT,
+  async (req: Request, res: Response) => {
+    try {
+      const decodedAdmin: decodedAdmin = req.decodedAdmin;
+      const courses = await prisma.course.findMany({
+        where: { adminId: decodedAdmin.id },
+      });
+      await prisma.$disconnect();
+      res.json(courses);
+    } catch (error) {
+      await prisma.$disconnect();
+      console.log(error);
+      res.sendStatus(500);
+    }
+  },
+);
+
+adminRouter.get(
+  "/all-courses",
+  authenticateAdminJWT,
+  async (req: Request, res: Response) => {
+    try {
+      const courses = await prisma.course.findMany();
+      await prisma.$disconnect();
+      res.json(courses);
+    } catch (error) {
+      await prisma.$disconnect();
+      console.log(error);
+      res.sendStatus(500);
+    }
+  },
+);

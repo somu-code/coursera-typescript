@@ -12,7 +12,7 @@ export function generateAdminJWT(adminPayload: adminPayload) {
 export async function authenticateAdminJWT(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) {
   const token: string = req.cookies.accessToken;
   if (token) {
