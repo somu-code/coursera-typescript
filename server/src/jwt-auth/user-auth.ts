@@ -12,7 +12,7 @@ export function generateUserJWT(userPayload: userPayload) {
 export async function authenticateUserJWT(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) {
   const token: string = req.cookies.accessToken;
   if (token) {

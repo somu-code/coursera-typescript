@@ -56,7 +56,7 @@ userRouter.post("/signin", async (req: Request, res: Response) => {
     }
     const isPasswordMatch: boolean = await bcrypt.compare(
       password,
-      userData!.hashedPassword
+      userData!.hashedPassword,
     );
 
     if (!isPasswordMatch) {
@@ -153,35 +153,35 @@ userRouter.get(
       console.error(error);
       res.sendStatus(500);
     }
-  }
+  },
 );
 
-userRouter.post(
-  "/purchase-course",
-  authenticateUserJWT,
-  async (req: Request, res: Response) => {
-    try {
-      const { courseId }: { courseId: number } = await req.body;
-      const decodedUser: decodedUser = req.decodedUser;
-      await prisma.user.update({
-        where: { id: decodedUser.id },
-        data: {
-          orders: {
-            connect: { id: courseId },
-          },
-        },
-      });
-      await prisma.$disconnect();
-      res.json({
-        message: `User id ${decodedUser.id} brought course id ${courseId}`,
-      });
-    } catch (error) {
-      await prisma.$disconnect();
-      console.error(error);
-      res.sendStatus(500);
-    }
-  }
-);
+// userRouter.post(
+//   "/purchase-course",
+//   authenticateUserJWT,
+//   async (req: Request, res: Response) => {
+//     try {
+//       const { courseId }: { courseId: number } = await req.body;
+//       const decodedUser: decodedUser = req.decodedUser;
+//       await prisma.user.update({
+//         where: { id: decodedUser.id },
+//         data: {
+//           orders: {
+//             connect: { id: courseId },
+//           },
+//         },
+//       });
+//       await prisma.$disconnect();
+//       res.json({
+//         message: `User id ${decodedUser.id} brought course id ${courseId}`,
+//       });
+//     } catch (error) {
+//       await prisma.$disconnect();
+//       console.error(error);
+//       res.sendStatus(500);
+//     }
+//   }
+// );
 
 // get the id of the course
 // user id
