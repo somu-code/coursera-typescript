@@ -1,4 +1,5 @@
 type decodedUser = {
+  id: number;
   email: string;
   role: string;
   iat: number;
@@ -6,6 +7,7 @@ type decodedUser = {
 };
 
 type decodedAdmin = {
+  id: number;
   email: string;
   role: string;
   iat: number;
