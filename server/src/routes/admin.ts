@@ -180,14 +180,21 @@ adminRouter.put(
   async (req: Request, res: Response) => {
     try {
       const updatedCourse: Course = await req.body;
-      await prisma.course.update({
-        where: {
-          id: updatedCourse.id,
-        },
-        data: updatedCourse,
-      });
-      await prisma.$disconnect();
-      res.json({ message: "Course updated successfully" });
+      const decodedAdmin: decodedAdmin = req.decodedAdmin;
+      if (decodedAdmin.id === updatedCourse.adminId) {
+        await prisma.course.update({
+          where: {
+            id: updatedCourse.id,
+          },
+          data: updatedCourse,
+        });
+        await prisma.$disconnect();
+        return res.json({ message: "Course updated successfully" });
+      } else {
+        return res
+          .status(403)
+          .json({ message: "The course does not belong to this admin." });
+      }
     } catch (error) {
       await prisma.$disconnect();
       console.log(error);
@@ -195,24 +202,3 @@ adminRouter.put(
     }
   }
 );
-
-// adminRouter.put(
-//   "/update",
-//   authenticateAdminJWT,
-//   async (req: Request, res: Response) => {
-//     try {
-//       const courseData: Course = await req.body;
-//       await prisma.course.update({
-//         where: { id: courseData.id },
-//       });
-//       await prisma.$disconnect();
-//       res.json({
-//         message: "Course updated successfully",
-//         courseData,
-//       });
-//     } catch (error) {
-//       await prisma.$disconnect();
-//       res.sendStatus(500);
-//     }
-//   },
-// );
