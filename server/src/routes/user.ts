@@ -3,6 +3,7 @@ import { prisma } from "../prismaClient";
 import bcrypt from "bcrypt";
 import { authenticateUserJWT, generateUserJWT } from "../jwt-auth/user-auth";
 import { User } from "../custom-types/user-types";
+import { Course } from "../custom-types/course-types";
 
 export const userRouter: Router = Router();
 
@@ -136,8 +137,53 @@ userRouter.delete("/delete", authenticateUserJWT, async (req, res) => {
   }
 });
 
+userRouter.post("/create-course", authenticateUserJWT, async (req: Request, res: Response) => {
+  try {
+    const { name, title, description, published, imageUrl, price }: { name?: string, title: string, description: string, published: boolean, imageUrl?: string, price: number } = await req.body
+    const decodedUser: decodedUser = req.decodedUser
+    const course: {
+      userId: number;
+      name?: string;
+      title: string;
+      description: string;
+      published?: false;
+      imageUrl?: string;
+      price: number;
+    } = {
+      userId: decodedUser.id,
+      title,
+      description,
+      price,
+    };
+    await prisma.course.create({ data: course, });
+    await prisma.$disconnect();
+    res.json({ Message: `Course created successfully` })
+  } catch (error) {
+    await prisma.$disconnect()
+    res.sendStatus(500)
+  }
+})
+
+userRouter.delete("/delete-course", authenticateUserJWT, async (req: Request, res: Response) => {
+  try {
+    const deletedCourse: Course = await req.body;
+    const decodedUser: decodedUser = req.decodedUser;
+    // if(decodedUser.id===deletedCourse.){
+    //   await prisma.course.delete({
+    //     where:{
+    //       userId:decodedUser.id,
+    //       id:deletedCourse.id
+    //     }
+    //   })
+    // }
+  } catch (error) {
+    await prisma.$disconnect();
+    res.sendStatus(500)
+  }
+})
+
 //create-course
 //update-course
-//delte-course
+//delete-course
 //courses --owned by admin
 // get-all-courses
