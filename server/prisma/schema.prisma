@@ -20,24 +20,34 @@ model Admin {
 }
 
 model User {
-  id             Int      @id @default(autoincrement())
-  email          String   @unique
+  id             Int           @id @default(autoincrement())
+  email          String        @unique
   hashedPassword String
   name           String?
-  role           String   @default("user")
-  courses        Course[] @relation("UserCourse")
+  role           String        @default("user")
+  UserCourses    UserCourses[]
 }
 
 model Course {
-  id          Int      @id @default(autoincrement())
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @default(now())
-  title       String   @db.VarChar(255)
+  id          Int           @id @default(autoincrement())
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @default(now())
+  title       String        @db.VarChar(255)
   description String
-  published   Boolean  @default(false)
+  published   Boolean       @default(false)
   imageUrl    String?
   price       Float
-  admin       Admin    @relation(fields: [adminId], references: [id])
+  admin       Admin         @relation(fields: [adminId], references: [id])
   adminId     Int
-  users       User[]   @relation("UserCourse")
+  UserCourses UserCourses[]
+}
+
+model UserCourses {
+  user        User     @relation(fields: [userId], references: [id])
+  userId      Int
+  course      Course   @relation(fields: [courseId], references: [id])
+  courseId    Int
+  purchasedAt DateTime @default(now())
+
+  @@id([userId, courseId])
 }

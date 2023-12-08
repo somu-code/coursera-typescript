@@ -56,7 +56,7 @@ userRouter.post("/signin", async (req: Request, res: Response) => {
     }
     const isPasswordMatch: boolean = await bcrypt.compare(
       password,
-      userData!.hashedPassword
+      userData!.hashedPassword,
     );
 
     if (!isPasswordMatch) {
@@ -100,8 +100,8 @@ userRouter.get("/profile", authenticateUserJWT, async (req, res) => {
     res.json({
       id: userData?.id,
       email: userData?.email,
-      role: userData?.role,
       name: userData?.name,
+      role: userData?.role,
     });
   } catch (error) {
     await prisma.$disconnect();
@@ -122,20 +122,16 @@ userRouter.post("/logout", authenticateUserJWT, async (req, res) => {
 userRouter.delete("/delete", authenticateUserJWT, async (req, res) => {
   try {
     const decodedUser: decodedUser = req.decodedUser;
-    const userData: User = await prisma.user.findFirst({
-      where: { email: decodedUser.email },
+    await prisma.user.delete({
+      where: { id: decodedUser.id },
     });
     await prisma.$disconnect();
-    if (userData) {
-      await prisma.user.delete({
-        where: { id: userData.id },
-      });
-    }
     res.clearCookie("accessToken");
     res.clearCookie("loggedIn");
     res.json({ message: "User deleted successfully" });
   } catch (error) {
     await prisma.$disconnect();
+    console.error(error);
     res.sendStatus(500);
   }
 });
@@ -153,7 +149,7 @@ userRouter.get(
       console.error(error);
       res.sendStatus(500);
     }
-  }
+  },
 );
 
 userRouter.post(
@@ -163,15 +159,13 @@ userRouter.post(
     try {
       const { courseId }: { courseId: number } = await req.body;
       const decodedUser: decodedUser = req.decodedUser;
-      const result = await prisma.user.update({
-        where: {
-          id: decodedUser.id,
-        },
+      const result = await prisma.userCourses.create({
         data: {
-          courses: {
-            connect: {
-              id: courseId,
-            },
+          user: {
+            connect: { id: decodedUser.id },
+          },
+          course: {
+            connect: { id: courseId },
           },
         },
       });
@@ -184,7 +178,7 @@ userRouter.post(
       console.error(error);
       res.sendStatus(500);
     }
-  }
+  },
 );
 
 userRouter.get(
@@ -198,7 +192,11 @@ userRouter.get(
           id: decodedUser.id,
         },
         include: {
-          courses: true,
+          UserCourses: {
+            select: {
+              course: true,
+            },
+          },
         },
       });
       await prisma.$disconnect();
@@ -208,5 +206,5 @@ userRouter.get(
       console.error(error);
       res.sendStatus(500);
     }
-  }
+  },
 );
