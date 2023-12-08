@@ -43,10 +43,11 @@ model Course {
 }
 
 model Order {
-  id       Int      @id @default(autoincrement())
-  user     User     @relation(fields: [userId], references: [id])
-  userId   Int
-  course   Course   @relation(fields: [courseId], references: [id])
-  courseId Int
-  date     DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id])
+  userId       Int
+  course       Course   @relation(fields: [courseId], references: [id])
+  courseId     Int
+  purchaseDate DateTime @default(now())
+
+  @@id([userId, courseId])
 }

@@ -7,6 +7,7 @@ export type User = {
 } | null;
 
 export type userPayload = {
+  id: number;
   email: string;
   role: string;
 };

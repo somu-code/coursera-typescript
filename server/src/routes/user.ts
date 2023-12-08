@@ -2,7 +2,7 @@ import { Router, Request, Response } from "express";
 import { prisma } from "../prismaClient";
 import bcrypt from "bcrypt";
 import { authenticateUserJWT, generateUserJWT } from "../jwt-auth/user-auth";
-import { User } from "../custom-types/user-types";
+import { User, userPayload } from "../custom-types/user-types";
 import { Course } from "../custom-types/course-types";
 
 export const userRouter: Router = Router();
@@ -56,12 +56,16 @@ userRouter.post("/signin", async (req: Request, res: Response) => {
     }
     const isPasswordMatch: boolean = await bcrypt.compare(
       password,
-      userData!.hashedPassword,
+      userData!.hashedPassword
     );
+
     if (!isPasswordMatch) {
       return res.status(401).json({ message: "Invalid password" });
     } else {
-      const userToken: string = generateUserJWT(email);
+      const { id, email, role }: { id: number; email: string; role: string } =
+        userData;
+      const userPayload: userPayload = { id, email, role };
+      const userToken: string = generateUserJWT(userPayload);
       res.cookie("accessToken", userToken, {
         domain: "localhost",
         path: "/",
@@ -90,12 +94,11 @@ userRouter.get("/profile", authenticateUserJWT, async (req, res) => {
   try {
     const decodedUser: decodedUser = req.decodedUser;
     const userData: User = await prisma.user.findFirst({
-      where: { email: decodedUser.email },
+      where: { id: decodedUser.id },
     });
     await prisma.$disconnect();
-    // take a look at this later.
-
     res.json({
+      id: userData?.id,
       email: userData?.email,
       role: userData?.role,
       name: userData?.name,
@@ -137,53 +140,114 @@ userRouter.delete("/delete", authenticateUserJWT, async (req, res) => {
   }
 });
 
-userRouter.post("/create-course", authenticateUserJWT, async (req: Request, res: Response) => {
-  try {
-    const { name, title, description, published, imageUrl, price }: { name?: string, title: string, description: string, published: boolean, imageUrl?: string, price: number } = await req.body
-    const decodedUser: decodedUser = req.decodedUser
-    const course: {
-      userId: number;
-      name?: string;
-      title: string;
-      description: string;
-      published?: false;
-      imageUrl?: string;
-      price: number;
-    } = {
-      userId: decodedUser.id,
-      title,
-      description,
-      price,
-    };
-    await prisma.course.create({ data: course, });
-    await prisma.$disconnect();
-    res.json({ Message: `Course created successfully` })
-  } catch (error) {
-    await prisma.$disconnect()
-    res.sendStatus(500)
+userRouter.get(
+  "/get-all-courses",
+  authenticateUserJWT,
+  async (req: Request, res: Response) => {
+    try {
+      const courseData = await prisma.course.findMany();
+      await prisma.$disconnect();
+      res.json(courseData);
+    } catch (error) {
+      await prisma.$disconnect();
+      console.error(error);
+      res.sendStatus(500);
+    }
   }
-})
+);
 
-userRouter.delete("/delete-course", authenticateUserJWT, async (req: Request, res: Response) => {
-  try {
-    const deletedCourse: Course = await req.body;
-    const decodedUser: decodedUser = req.decodedUser;
-    // if(decodedUser.id===deletedCourse.){
-    //   await prisma.course.delete({
-    //     where:{
-    //       userId:decodedUser.id,
-    //       id:deletedCourse.id
-    //     }
-    //   })
-    // }
-  } catch (error) {
-    await prisma.$disconnect();
-    res.sendStatus(500)
+userRouter.post(
+  "/purchase-course",
+  authenticateUserJWT,
+  async (req: Request, res: Response) => {
+    try {
+      const { courseId }: { courseId: number } = await req.body;
+      const decodedUser: decodedUser = req.decodedUser;
+      await prisma.user.update({
+        where: { id: decodedUser.id },
+        data: {
+          orders: {
+            connect: { id: courseId },
+          },
+        },
+      });
+      await prisma.$disconnect();
+      res.json({
+        message: `User id ${decodedUser.id} brought course id ${courseId}`,
+      });
+    } catch (error) {
+      await prisma.$disconnect();
+      console.error(error);
+      res.sendStatus(500);
+    }
   }
-})
+);
 
-//create-course
-//update-course
-//delete-course
-//courses --owned by admin
-// get-all-courses
+// get the id of the course
+// user id
+
+// userRouter.post(
+//   "/get-all-course",
+//   authenticateUserJWT,
+//   async (req: Request, res: Response) => {
+//     try {
+//       const {
+//         title,
+//         description,
+//         published,
+//         imageUrl,
+//         price,
+//       }: {
+//         title: string;
+//         description: string;
+//         published: boolean;
+//         imageUrl: string;
+//         price: number;
+//       } = await req.body;
+//       const decodedUser: decodedUser = req.decodedUser;
+//       const course: {
+//         userId: number;
+//         title: string;
+//         description: string;
+//         published: boolean;
+//         imageUrl: string;
+//         price: number;
+//       } = {
+//         userId: decodedUser.id,
+//         title,
+//         description,
+//         published,
+//         imageUrl,
+//         price,
+//       };
+//       await prisma.course.create({ data: course });
+//       await prisma.$disconnect();
+//       res.json({ Message: `Course created successfully` });
+//     } catch (error) {
+//       await prisma.$disconnect();
+//       res.sendStatus(500);
+//     }
+//   }
+// );
+
+// userRouter.delete("/delete-course", authenticateUserJWT, async (req: Request, res: Response) => {
+//   try {
+//     const deletedCourse: Course = await req.body;
+//     const decodedUser: decodedUser = req.decodedUser;
+//     // if(decodedUser.id===deletedCourse.){
+//     //   await prisma.course.delete({
+//     //     where:{
+//     //       userId:decodedUser.id,
+//     //       id:deletedCourse.id
+//     //     }
+//     //   })
+//     // }
+//   } catch (error) {
+//     await prisma.$disconnect();
+//     res.sendStatus(500)
+//   }
+// })
+
+// get all courses
+// purchase a course
+// get all purchsed courses

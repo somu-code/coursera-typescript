@@ -1,11 +1,9 @@
 import jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
-import { userPayload } from "../custom-types/user-types";
+import { User, userPayload } from "../custom-types/user-types";
 
-export function generateUserJWT(email: string) {
-  const role = "user";
-  const payload: userPayload = { email, role };
-  return jwt.sign(payload, process.env.USER_TOKEN_SECRET!, {
+export function generateUserJWT(userPayload: userPayload) {
+  return jwt.sign(userPayload, process.env.USER_TOKEN_SECRET!, {
     expiresIn: process.env.TOKEN_EXPIRY!,
     algorithm: "HS256",
   });
@@ -14,7 +12,7 @@ export function generateUserJWT(email: string) {
 export async function authenticateUserJWT(
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) {
   const token: string = req.cookies.accessToken;
   if (token) {

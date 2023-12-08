@@ -48,12 +48,13 @@ adminRouter.post("/signin", async (req: Request, res: Response) => {
     } else {
       const isPasswordMatch = await bcrypt.compare(
         password,
-        adminData.hashedPassword,
+        adminData.hashedPassword
       );
       if (!isPasswordMatch) {
         return res.status(401).json({ message: "Invalid password" });
       } else {
-        const { id, email, role } = adminData;
+        const { id, email, role }: { id: number; email: string; role: string } =
+          adminData;
         const adminPayload: adminPayload = { id, email, role };
         const adminToken: string = generateAdminJWT(adminPayload);
         res.cookie("accessToken", adminToken, {
@@ -101,7 +102,7 @@ adminRouter.get(
       await prisma.$disconnect();
       res.sendStatus(500);
     }
-  },
+  }
 );
 
 adminRouter.post(
@@ -115,7 +116,7 @@ adminRouter.post(
     } catch (error) {
       res.sendStatus(500);
     }
-  },
+  }
 );
 
 adminRouter.delete(
@@ -137,7 +138,7 @@ adminRouter.delete(
       await prisma.$disconnect();
       res.sendStatus(500);
     }
-  },
+  }
 );
 
 adminRouter.post(
@@ -183,7 +184,7 @@ adminRouter.post(
       await prisma.$disconnect();
       res.sendStatus(500);
     }
-  },
+  }
 );
 
 adminRouter.put(
@@ -213,7 +214,7 @@ adminRouter.put(
       console.log(error);
       res.sendStatus(500);
     }
-  },
+  }
 );
 
 adminRouter.delete(
@@ -245,7 +246,7 @@ adminRouter.delete(
       console.log(error);
       res.sendStatus(500);
     }
-  },
+  }
 );
 
 adminRouter.get(
@@ -264,7 +265,7 @@ adminRouter.get(
       console.log(error);
       res.sendStatus(500);
     }
-  },
+  }
 );
 
 adminRouter.get(
@@ -280,5 +281,5 @@ adminRouter.get(
       console.log(error);
       res.sendStatus(500);
     }
-  },
+  }
 );
