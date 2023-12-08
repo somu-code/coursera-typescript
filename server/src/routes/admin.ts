@@ -216,6 +216,38 @@ adminRouter.put(
   }
 );
 
+adminRouter.delete(
+  "/delete-course",
+  authenticateAdminJWT,
+  async (req: Request, res: Response) => {
+    try {
+      const decodedAdmin: decodedAdmin = req.decodedAdmin;
+      const course: { id: number } = await req.body;
+      const currentCourse = await prisma.course.findFirst({
+        where: { id: course.id },
+      });
+      if (!currentCourse) {
+        return res.status(404).json({ message: "Course does not exists" });
+      }
+      if (currentCourse?.adminId === decodedAdmin.id) {
+        await prisma.course.delete({
+          where: { id: course.id },
+        });
+        await prisma.$disconnect();
+        res.json({ message: "Course deleted successfully" });
+      } else {
+        res
+          .status(403)
+          .json({ message: "The course does not belong to this admin." });
+      }
+    } catch (error) {
+      await prisma.$disconnect();
+      console.log(error);
+      res.sendStatus(500);
+    }
+  }
+);
+
 // delete-course
 // courses -courses owned by admin
 // get-all-coures
