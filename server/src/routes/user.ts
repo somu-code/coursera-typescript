@@ -39,6 +39,7 @@ userRouter.post("/signup", async (req: Request, res: Response) => {
     });
   } catch (error) {
     await prisma.$disconnect();
+    console.error(error);
     res.sendStatus(500);
   }
 });
