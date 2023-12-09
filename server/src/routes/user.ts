@@ -192,11 +192,7 @@ userRouter.get(
           id: decodedUser.id,
         },
         include: {
-          UserCourses: {
-            select: {
-              course: true,
-            },
-          },
+          UserCourses: true,
         },
       });
       await prisma.$disconnect();

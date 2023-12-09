@@ -18,14 +18,14 @@ adminRouter.post("/signup", async (req: Request, res: Response) => {
       await prisma.$disconnect();
       return res.status(403).json({ message: "Admin email already exists" });
     }
-
     const hashedPassword: string = await bcrypt.hash(password, 8);
     await prisma.admin.create({
       data: {
         email,
         hashedPassword: hashedPassword,
       },
-    });
+    })
+
     await prisma.$disconnect();
     res.json({ message: "Admin created successfully" });
   } catch (error) {
