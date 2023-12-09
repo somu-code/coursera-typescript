@@ -24,7 +24,7 @@ adminRouter.post("/signup", async (req: Request, res: Response) => {
         email,
         hashedPassword: hashedPassword,
       },
-    })
+    });
 
     await prisma.$disconnect();
     res.json({ message: "Admin created successfully" });
