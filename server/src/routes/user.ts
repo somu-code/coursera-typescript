@@ -137,8 +137,10 @@ userRouter.delete("/delete", authenticateUserJWT, async (req, res) => {
   }
 });
 
+// Courses
+
 userRouter.get(
-  "/get-all-courses",
+  "/all-courses",
   authenticateUserJWT,
   async (req: Request, res: Response) => {
     try {

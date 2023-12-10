@@ -142,6 +142,8 @@ adminRouter.delete(
   },
 );
 
+// Courses
+
 adminRouter.post(
   "/create-course",
   authenticateAdminJWT,
@@ -251,7 +253,7 @@ adminRouter.delete(
 );
 
 adminRouter.get(
-  "/courses",
+  "/my-courses",
   authenticateAdminJWT,
   async (req: Request, res: Response) => {
     try {
