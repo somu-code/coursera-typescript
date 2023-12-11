@@ -92,7 +92,7 @@ userRouter.post("/signin", async (req: Request, res: Response) => {
   }
 });
 
-userRouter.get("/profile", authenticateUserJWT, async (req, res) => {
+userRouter.get("/profile", authenticateUserJWT, async (req: Request, res: Response) => {
   try {
     const decodedUser: decodedUser = req.decodedUser;
     const userData: User | null = await prisma.user.findFirst({
