@@ -4,7 +4,7 @@ export type Admin = {
   hashedPassword: string;
   name: string | null;
   role: string;
-} | null;
+};
 
 export type adminPayload = {
   id: number;

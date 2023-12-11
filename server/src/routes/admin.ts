@@ -3,15 +3,19 @@ import { prisma } from "../prismaClient";
 import bcrypt from "bcrypt";
 import { authenticateAdminJWT, generateAdminJWT } from "../jwt-auth/admin-auth";
 import { Admin, adminPayload } from "../custom-types/admin-types";
-import { Course } from "../custom-types/course-types";
+import {
+  Course,
+  CourseFromDB,
+  CourseWithAdminId,
+} from "../custom-types/course-types";
 
-export const adminRouter = Router();
+export const adminRouter: Router = Router();
 
 adminRouter.post("/signup", async (req: Request, res: Response) => {
   try {
     const { email, password }: { email: string; password: string } =
       await req.body;
-    const adminData: Admin = await prisma.admin.findFirst({
+    const adminData: Admin | null = await prisma.admin.findFirst({
       where: { email: email },
     });
     if (adminData) {
@@ -27,17 +31,18 @@ adminRouter.post("/signup", async (req: Request, res: Response) => {
     });
 
     await prisma.$disconnect();
-    res.json({ message: "Admin created successfully" });
+    return res.json({ message: "Admin created successfully" });
   } catch (error) {
     await prisma.$disconnect();
+    console.error(error);
     res.sendStatus(500);
   }
 });
 
 adminRouter.post("/signin", async (req: Request, res: Response) => {
   try {
-    const { email, password } = req.body;
-    const adminData: Admin = await prisma.admin.findUnique({
+    const { email, password }: { email: string; password: string } = req.body;
+    const adminData: Admin | null = await prisma.admin.findUnique({
       where: {
         email: email,
       },
@@ -46,7 +51,7 @@ adminRouter.post("/signin", async (req: Request, res: Response) => {
     if (!adminData) {
       return res.status(404).json({ message: "Admin email not found" });
     } else {
-      const isPasswordMatch = await bcrypt.compare(
+      const isPasswordMatch: boolean = await bcrypt.compare(
         password,
         adminData.hashedPassword,
       );
@@ -57,7 +62,7 @@ adminRouter.post("/signin", async (req: Request, res: Response) => {
           adminData;
         const adminPayload: adminPayload = { id, email, role };
         const adminToken: string = generateAdminJWT(adminPayload);
-        res.cookie("accessToken", adminToken, {
+        res.cookie("adminAccessToken", adminToken, {
           domain: "localhost",
           path: "/",
           maxAge: 60 * 60 * 1000,
@@ -65,7 +70,7 @@ adminRouter.post("/signin", async (req: Request, res: Response) => {
           secure: true,
           sameSite: "strict",
         });
-        res.cookie("loggedIn", true, {
+        res.cookie("adminLoggedIn", true, {
           domain: "localhost",
           path: "/",
           maxAge: 60 * 60 * 1000,
@@ -77,6 +82,7 @@ adminRouter.post("/signin", async (req: Request, res: Response) => {
     }
   } catch (error) {
     await prisma.$disconnect();
+    console.error(error);
     res.sendStatus(500);
   }
 });
@@ -87,20 +93,18 @@ adminRouter.get(
   async (req: Request, res: Response) => {
     try {
       const decodedAdmin: decodedAdmin = req.decodedAdmin;
-      const adminData: Admin = await prisma.admin.findUnique({
+      const adminData: Admin | null = await prisma.admin.findUnique({
         where: {
-          email: decodedAdmin.email,
+          id: decodedAdmin.id,
         },
       });
       await prisma.$disconnect();
       res.json({
-        id: adminData?.id,
-        email: adminData?.email,
         name: adminData?.name,
-        role: adminData?.role,
       });
     } catch (error) {
       await prisma.$disconnect();
+      console.error(error);
       res.sendStatus(500);
     }
   },
@@ -111,10 +115,11 @@ adminRouter.post(
   authenticateAdminJWT,
   async (req: Request, res: Response) => {
     try {
-      res.clearCookie("accessToken");
-      res.clearCookie("loggedIn");
+      res.clearCookie("adminAccessToken");
+      res.clearCookie("adminLoggedIn");
       res.json({ message: "Logged out successfully" });
     } catch (error) {
+      console.error(error);
       res.sendStatus(500);
     }
   },
@@ -128,47 +133,32 @@ adminRouter.delete(
       const decodedAdmin: decodedAdmin = req.decodedAdmin;
       await prisma.admin.delete({
         where: {
-          email: decodedAdmin.email,
+          id: decodedAdmin.id,
         },
       });
       await prisma.$disconnect();
-      res.clearCookie("accessToken");
-      res.clearCookie("loggedIn");
+      res.clearCookie("adminAccessToken");
+      res.clearCookie("adminLoggedIn");
       res.json({ message: "Admin deleted successfully" });
     } catch (error) {
       await prisma.$disconnect();
+      console.error(error);
       res.sendStatus(500);
     }
   },
 );
+
+// Courses
 
 adminRouter.post(
   "/create-course",
   authenticateAdminJWT,
   async (req: Request, res: Response) => {
     try {
-      const {
-        title,
-        description,
-        published,
-        imageUrl,
-        price,
-      }: {
-        title: string;
-        description: string;
-        published: boolean;
-        imageUrl: string;
-        price: number;
-      } = await req.body;
+      const { title, description, published, imageUrl, price }: Course =
+        await req.body;
       const decodedAdmin: decodedAdmin = req.decodedAdmin;
-      const course: {
-        adminId: number;
-        title: string;
-        description: string;
-        published: boolean;
-        imageUrl: string;
-        price: number;
-      } = {
+      const createCourse: CourseWithAdminId = {
         adminId: decodedAdmin.id,
         title,
         description,
@@ -177,12 +167,13 @@ adminRouter.post(
         price,
       };
       await prisma.course.create({
-        data: course,
+        data: createCourse,
       });
       await prisma.$disconnect();
       res.json({ message: "Course created successfully" });
     } catch (error) {
       await prisma.$disconnect();
+      console.error(error);
       res.sendStatus(500);
     }
   },
@@ -193,7 +184,7 @@ adminRouter.put(
   authenticateAdminJWT,
   async (req: Request, res: Response) => {
     try {
-      const updatedCourse: Course = await req.body;
+      const updatedCourse: CourseFromDB = await req.body;
       const decodedAdmin: decodedAdmin = req.decodedAdmin;
       if (decodedAdmin.id === updatedCourse.adminId) {
         await prisma.course.update({
@@ -224,21 +215,21 @@ adminRouter.delete(
   async (req: Request, res: Response) => {
     try {
       const decodedAdmin: decodedAdmin = req.decodedAdmin;
-      const course: { id: number } = await req.body;
-      const currentCourse = await prisma.course.findFirst({
-        where: { id: course.id },
+      const { courseId }: { courseId: number } = await req.body;
+      const currentCourse: CourseFromDB | null = await prisma.course.findFirst({
+        where: { id: courseId },
       });
       if (!currentCourse) {
         return res.status(404).json({ message: "Course does not exists" });
       }
-      if (currentCourse?.adminId === decodedAdmin.id) {
+      if (currentCourse.adminId === decodedAdmin.id) {
         await prisma.course.delete({
-          where: { id: course.id },
+          where: { id: courseId },
         });
         await prisma.$disconnect();
-        res.json({ message: "Course deleted successfully" });
+        return res.json({ message: "Course deleted successfully" });
       } else {
-        res
+        return res
           .status(403)
           .json({ message: "The course does not belong to this admin." });
       }
@@ -251,12 +242,12 @@ adminRouter.delete(
 );
 
 adminRouter.get(
-  "/courses",
+  "/my-courses",
   authenticateAdminJWT,
   async (req: Request, res: Response) => {
     try {
       const decodedAdmin: decodedAdmin = req.decodedAdmin;
-      const courses = await prisma.course.findMany({
+      const courses: CourseFromDB[] = await prisma.course.findMany({
         where: { adminId: decodedAdmin.id },
       });
       await prisma.$disconnect();
@@ -274,7 +265,7 @@ adminRouter.get(
   authenticateAdminJWT,
   async (req: Request, res: Response) => {
     try {
-      const courses = await prisma.course.findMany();
+      const courses: CourseFromDB[] = await prisma.course.findMany();
       await prisma.$disconnect();
       res.json(courses);
     } catch (error) {

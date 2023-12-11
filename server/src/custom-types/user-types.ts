@@ -4,7 +4,7 @@ export type User = {
   hashedPassword: string;
   name: string | null;
   role: string;
-} | null;
+};
 
 export type userPayload = {
   id: number;
