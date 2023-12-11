@@ -91,7 +91,7 @@ userRouter.post("/signin", async (req: Request, res: Response) => {
   }
 });
 
-userRouter.get("/profile", authenticateUserJWT, async (req, res) => {
+userRouter.get("/profile", authenticateUserJWT, async (req: Request, res: Response) => {
   try {
     const decodedUser: decodedUser = req.decodedUser;
     const userData: User = await prisma.user.findFirst({
@@ -193,10 +193,15 @@ userRouter.get(
           id: decodedUser.id,
         },
         include: {
-          UserCourses: true,
-        },
+          UserCourses: {
+            include: {
+              course: true,
+            }
+          }
+        }
       });
       await prisma.$disconnect();
+      // const courses = coursesOfUser?.UserCourses.map((userCourse) => userCourse.course) || [];
       res.json({ coursesOfUser });
     } catch (error) {
       await prisma.$disconnect();
