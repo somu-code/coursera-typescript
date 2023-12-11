@@ -100,10 +100,7 @@ adminRouter.get(
       });
       await prisma.$disconnect();
       res.json({
-        id: adminData?.id,
-        email: adminData?.email,
         name: adminData?.name,
-        role: adminData?.role,
       });
     } catch (error) {
       await prisma.$disconnect();

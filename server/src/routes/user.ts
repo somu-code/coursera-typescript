@@ -100,10 +100,7 @@ userRouter.get("/profile", authenticateUserJWT, async (req, res) => {
     });
     await prisma.$disconnect();
     res.json({
-      id: userData?.id,
-      email: userData?.email,
       name: userData?.name,
-      role: userData?.role,
     });
   } catch (error) {
     await prisma.$disconnect();
@@ -197,9 +194,9 @@ userRouter.get(
         where: {
           id: decodedUser.id,
         },
-        include: {
+        select: {
           UserCourses: {
-            include: {
+            select: {
               course: true,
             },
           },
