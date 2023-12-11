@@ -35,7 +35,7 @@ model Course {
   title       String        @db.VarChar(255)
   description String
   published   Boolean       @default(false)
-  imageUrl    String?
+  imageUrl    String
   price       Float
   admin       Admin         @relation(fields: [adminId], references: [id])
   adminId     Int

@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
 import { userPayload } from "../custom-types/user-types";
 
-export function generateUserJWT(userPayload: userPayload) {
+export function generateUserJWT(userPayload: userPayload): string {
   return jwt.sign(userPayload, process.env.USER_TOKEN_SECRET!, {
     expiresIn: process.env.TOKEN_EXPIRY!,
     algorithm: "HS256",
@@ -14,7 +14,7 @@ export async function authenticateUserJWT(
   res: Response,
   next: NextFunction,
 ) {
-  const token: string = req.cookies.accessToken;
+  const token: string = req.cookies.userAccessToken;
   if (token) {
     jwt.verify(token, process.env.USER_TOKEN_SECRET!, (err, decoded) => {
       if (err) {

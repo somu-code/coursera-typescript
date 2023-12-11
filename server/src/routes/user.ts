@@ -3,23 +3,23 @@ import { prisma } from "../prismaClient";
 import bcrypt from "bcrypt";
 import { authenticateUserJWT, generateUserJWT } from "../jwt-auth/user-auth";
 import { User, userPayload } from "../custom-types/user-types";
-import { Course } from "../custom-types/course-types";
+import { Course, CourseFromDB } from "../custom-types/course-types";
 
 export const userRouter: Router = Router();
 
-userRouter.get("/", async (req: Request, res: Response) => {
-  try {
-    res.status(200).send("<h1>User api</h1>");
-  } catch (error) {
-    res.sendStatus(500);
-  }
-});
+// userRouter.get("/", async (req: Request, res: Response) => {
+//   try {
+//     res.status(200).send("<h1>User api</h1>");
+//   } catch (error) {
+//     res.sendStatus(500);
+//   }
+// });
 
 userRouter.post("/signup", async (req: Request, res: Response) => {
   try {
     const { email, password }: { email: string; password: string } =
       await req.body;
-    const userData: User = await prisma.user.findFirst({
+    const userData: User | null = await prisma.user.findFirst({
       where: { email: email },
     });
     if (userData) {
@@ -48,7 +48,7 @@ userRouter.post("/signin", async (req: Request, res: Response) => {
   try {
     const { email, password }: { email: string; password: string } =
       await req.body;
-    const userData: User = await prisma.user.findFirst({
+    const userData: User | null = await prisma.user.findFirst({
       where: { email: email },
     });
     await prisma.$disconnect();
@@ -67,7 +67,7 @@ userRouter.post("/signin", async (req: Request, res: Response) => {
         userData;
       const userPayload: userPayload = { id, email, role };
       const userToken: string = generateUserJWT(userPayload);
-      res.cookie("accessToken", userToken, {
+      res.cookie("userAccessToken", userToken, {
         domain: "localhost",
         path: "/",
         maxAge: 60 * 60 * 1000,
@@ -76,7 +76,7 @@ userRouter.post("/signin", async (req: Request, res: Response) => {
         sameSite: "strict",
       });
 
-      res.cookie("loggedIn", true, {
+      res.cookie("userLoggedIn", true, {
         domain: "localhost",
         path: "/",
         maxAge: 60 * 60 * 1000,
@@ -87,6 +87,7 @@ userRouter.post("/signin", async (req: Request, res: Response) => {
     }
   } catch (error) {
     await prisma.$disconnect();
+    console.error(error);
     res.sendStatus(500);
   }
 });
@@ -94,7 +95,7 @@ userRouter.post("/signin", async (req: Request, res: Response) => {
 userRouter.get("/profile", authenticateUserJWT, async (req, res) => {
   try {
     const decodedUser: decodedUser = req.decodedUser;
-    const userData: User = await prisma.user.findFirst({
+    const userData: User | null = await prisma.user.findFirst({
       where: { id: decodedUser.id },
     });
     await prisma.$disconnect();
@@ -106,16 +107,18 @@ userRouter.get("/profile", authenticateUserJWT, async (req, res) => {
     });
   } catch (error) {
     await prisma.$disconnect();
+    console.error(error);
     res.sendStatus(500);
   }
 });
 
 userRouter.post("/logout", authenticateUserJWT, async (req, res) => {
   try {
-    res.clearCookie("accessToken");
-    res.clearCookie("loggedIn");
+    res.clearCookie("userAccessToken");
+    res.clearCookie("userLoggedIn");
     res.json({ message: "Logged out successfully" });
   } catch (error) {
+    console.error(error);
     res.sendStatus(500);
   }
 });
@@ -127,8 +130,8 @@ userRouter.delete("/delete", authenticateUserJWT, async (req, res) => {
       where: { id: decodedUser.id },
     });
     await prisma.$disconnect();
-    res.clearCookie("accessToken");
-    res.clearCookie("loggedIn");
+    res.clearCookie("userAccessToken");
+    res.clearCookie("userLoggedIn");
     res.json({ message: "User deleted successfully" });
   } catch (error) {
     await prisma.$disconnect();
@@ -144,7 +147,7 @@ userRouter.get(
   authenticateUserJWT,
   async (req: Request, res: Response) => {
     try {
-      const courseData = await prisma.course.findMany();
+      const courseData: CourseFromDB[] = await prisma.course.findMany();
       await prisma.$disconnect();
       res.json(courseData);
     } catch (error) {
@@ -190,16 +193,20 @@ userRouter.get(
   async (req: Request, res: Response) => {
     try {
       const decodedUser: decodedUser = req.decodedUser;
-      const coursesOfUser = prisma.user.findUnique({
+      const userWithCourses = await prisma.user.findUnique({
         where: {
           id: decodedUser.id,
         },
         include: {
-          UserCourses: true,
+          UserCourses: {
+            include: {
+              course: true,
+            },
+          },
         },
       });
       await prisma.$disconnect();
-      res.json({ coursesOfUser });
+      res.json(userWithCourses);
     } catch (error) {
       await prisma.$disconnect();
       console.error(error);
