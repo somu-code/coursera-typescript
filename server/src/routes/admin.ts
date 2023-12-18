@@ -8,30 +8,49 @@ import {
   CourseFromDB,
   CourseWithAdminId,
 } from "../custom-types/course-types";
+import z from "zod";
 
 export const adminRouter: Router = Router();
 
 adminRouter.post("/signup", async (req: Request, res: Response) => {
   try {
-    const { email, password }: { email: string; password: string } =
-      await req.body;
-    const adminData: Admin | null = await prisma.admin.findFirst({
-      where: { email: email },
+    const signupSchema = z.object({
+      email: z
+        .string()
+        .email("This is not a valid email.")
+        .includes("@")
+        .min(3, "Email must be at least 3 characters long.")
+        .max(254, "Email must be no longer than 254 characters."),
+      password: z
+        .string()
+        .min(8, "Password must be at least 8 characters long."),
     });
-    if (adminData) {
-      await prisma.$disconnect();
-      return res.status(403).json({ message: "Admin email already exists" });
-    }
-    const hashedPassword: string = await bcrypt.hash(password, 8);
-    await prisma.admin.create({
-      data: {
-        email,
-        hashedPassword: hashedPassword,
-      },
-    });
+    const parsedInput = signupSchema.safeParse(req.body);
+    if (!parsedInput.success) {
+      return res
+        .status(411)
+        .json({ message: parsedInput.error.issues[0].message });
+    } else {
+      const { email, password }: { email: string; password: string } =
+        parsedInput.data;
+      const adminData: Admin | null = await prisma.admin.findFirst({
+        where: { email: email },
+      });
+      if (adminData) {
+        await prisma.$disconnect();
+        return res.status(403).json({ message: "Admin email already exists" });
+      }
+      const hashedPassword: string = await bcrypt.hash(password, 8);
+      await prisma.admin.create({
+        data: {
+          email,
+          hashedPassword: hashedPassword,
+        },
+      });
 
-    await prisma.$disconnect();
-    return res.json({ message: "Admin created successfully" });
+      await prisma.$disconnect();
+      return res.json({ message: "Admin created successfully" });
+    }
   } catch (error) {
     await prisma.$disconnect();
     console.error(error);
@@ -53,7 +72,7 @@ adminRouter.post("/signin", async (req: Request, res: Response) => {
     } else {
       const isPasswordMatch: boolean = await bcrypt.compare(
         password,
-        adminData.hashedPassword,
+        adminData.hashedPassword
       );
       if (!isPasswordMatch) {
         return res.status(401).json({ message: "Invalid password" });
@@ -107,7 +126,7 @@ adminRouter.get(
       console.error(error);
       res.sendStatus(500);
     }
-  },
+  }
 );
 
 adminRouter.post(
@@ -122,7 +141,7 @@ adminRouter.post(
       console.error(error);
       res.sendStatus(500);
     }
-  },
+  }
 );
 
 adminRouter.delete(
@@ -145,7 +164,7 @@ adminRouter.delete(
       console.error(error);
       res.sendStatus(500);
     }
-  },
+  }
 );
 
 // Courses
@@ -176,7 +195,7 @@ adminRouter.post(
       console.error(error);
       res.sendStatus(500);
     }
-  },
+  }
 );
 
 adminRouter.put(
@@ -206,7 +225,7 @@ adminRouter.put(
       console.log(error);
       res.sendStatus(500);
     }
-  },
+  }
 );
 
 adminRouter.delete(
@@ -238,7 +257,7 @@ adminRouter.delete(
       console.log(error);
       res.sendStatus(500);
     }
-  },
+  }
 );
 
 adminRouter.get(
@@ -257,7 +276,7 @@ adminRouter.get(
       console.log(error);
       res.sendStatus(500);
     }
-  },
+  }
 );
 
 adminRouter.get(
@@ -273,5 +292,5 @@ adminRouter.get(
       console.log(error);
       res.sendStatus(500);
     }
-  },
+  }
 );
