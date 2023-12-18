@@ -1,13 +1,12 @@
 /** @format */
-import { LandingPage } from './components/LandingPage.tsx';
+import HomePage from "./components/HomePage";
 
 function App() {
-	return (
-		<>
-			<h1 className="text-3xl">Admin-client</h1>
-			<LandingPage></LandingPage>
-		</>
-	);
+  return (
+    <div>
+      <HomePage />
+    </div>
+  );
 }
 
 export default App;
