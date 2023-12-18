@@ -6,7 +6,11 @@
 export default {
 	content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
 	theme: {
-		extend: {},
+		extend: {
+			backgroundImage: {
+				'register-image': "url('./public/register-image.svg')",
+			},
+		},
 	},
 	plugins: [],
 };

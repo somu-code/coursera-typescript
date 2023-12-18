@@ -1,11 +1,19 @@
 /** @format */
-import { LandingPage } from './components/LandingPage.tsx';
+//import { BrowserRouter as Router, Route, Link } from 'react-router-dom';
+
+import HomePage from './components/HomePage.tsx';
+import { Navbar } from './components/Navbar.tsx';
+import SignInPage from './components/SignInPage.tsx';
+import { Routes, Route } from 'react-router-dom';
 
 function App() {
 	return (
 		<>
-			<h1 className="text-3xl">Admin-client</h1>
-			<LandingPage></LandingPage>
+			{/* <Route path="/" exact element={<Navbar />} /> */}
+			<Navbar />
+			<HomePage />
+
+			<Route path="/signin" element={<SignInPage />} />
 		</>
 	);
 }
