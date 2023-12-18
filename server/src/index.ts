@@ -29,6 +29,6 @@ app.get("/ping", async (req: Request, res: Response) => {
 
 app.listen(process.env.PORT, () => {
   console.log(
-    `Express server is listening on http://localhost:${process.env.PORT}`
+    `Express server is listening on http://localhost:${process.env.PORT}`,
   );
 });

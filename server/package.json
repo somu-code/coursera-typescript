@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "format-prettier": "prettier --write \"**/*.{js,jsx,mjs,ts,tsx,mts,md}\"",
+    "format": "prettier --write \"**/*.{js,jsx,mjs,ts,tsx,mts,md}\"",
     "dev": "nodemon",
     "typecheck": "tsc --noEmit",
     "build": "tsc -b",
