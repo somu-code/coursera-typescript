@@ -1,13 +1,9 @@
 /** @format */
 
-import React from 'react';
+import React from "react";
 
-const HomePage: React.FC = (): JSX.Element => {
-	return (
-		<>
-			<div></div>
-		</>
-	);
-};
+function HomePage(): React.JSX.Element {
+  return <div>HomePage</div>;
+}
 
 export default HomePage;
