@@ -9,22 +9,16 @@ import {
   CourseWithAdminId,
 } from "../custom-types/course-types";
 import z from "zod";
+import {
+  courseFromDBScheam,
+  createCourseSchema,
+  signupSchema,
+} from "../zod/zod-types";
 
 export const adminRouter: Router = Router();
 
 adminRouter.post("/signup", async (req: Request, res: Response) => {
   try {
-    const signupSchema = z.object({
-      email: z
-        .string()
-        .email("This is not a valid email.")
-        .includes("@")
-        .min(3, "Email must be at least 3 characters long.")
-        .max(254, "Email must be no longer than 254 characters."),
-      password: z
-        .string()
-        .min(8, "Password must be at least 8 characters long."),
-    });
     const parsedInput = signupSchema.safeParse(req.body);
     if (!parsedInput.success) {
       return res
@@ -60,42 +54,53 @@ adminRouter.post("/signup", async (req: Request, res: Response) => {
 
 adminRouter.post("/signin", async (req: Request, res: Response) => {
   try {
-    const { email, password }: { email: string; password: string } = req.body;
-    const adminData: Admin | null = await prisma.admin.findUnique({
-      where: {
-        email: email,
-      },
-    });
-    await prisma.$disconnect();
-    if (!adminData) {
-      return res.status(404).json({ message: "Admin email not found" });
+    const parsedInput = signupSchema.safeParse(req.body);
+    if (!parsedInput.success) {
+      return res
+        .status(411)
+        .json({ message: parsedInput.error.issues[0].message });
     } else {
-      const isPasswordMatch: boolean = await bcrypt.compare(
-        password,
-        adminData.hashedPassword
-      );
-      if (!isPasswordMatch) {
-        return res.status(401).json({ message: "Invalid password" });
+      const { email, password }: { email: string; password: string } =
+        parsedInput.data;
+      const adminData: Admin | null = await prisma.admin.findUnique({
+        where: {
+          email: email,
+        },
+      });
+      await prisma.$disconnect();
+      if (!adminData) {
+        return res.status(404).json({ message: "Admin email not found" });
       } else {
-        const { id, email, role }: { id: number; email: string; role: string } =
-          adminData;
-        const adminPayload: adminPayload = { id, email, role };
-        const adminToken: string = generateAdminJWT(adminPayload);
-        res.cookie("adminAccessToken", adminToken, {
-          domain: "localhost",
-          path: "/",
-          maxAge: 60 * 60 * 1000,
-          httpOnly: true,
-          secure: true,
-          sameSite: "strict",
-        });
-        res.cookie("adminLoggedIn", true, {
-          domain: "localhost",
-          path: "/",
-          maxAge: 60 * 60 * 1000,
-          secure: true,
-          sameSite: "strict",
-        });
+        const isPasswordMatch: boolean = await bcrypt.compare(
+          password,
+          adminData.hashedPassword
+        );
+        if (!isPasswordMatch) {
+          return res.status(401).json({ message: "Invalid password" });
+        } else {
+          const {
+            id,
+            email,
+            role,
+          }: { id: number; email: string; role: string } = adminData;
+          const adminPayload: adminPayload = { id, email, role };
+          const adminToken: string = generateAdminJWT(adminPayload);
+          res.cookie("adminAccessToken", adminToken, {
+            domain: "localhost",
+            path: "/",
+            maxAge: 60 * 60 * 1000,
+            httpOnly: true,
+            secure: true,
+            sameSite: "strict",
+          });
+          res.cookie("adminLoggedIn", true, {
+            domain: "localhost",
+            path: "/",
+            maxAge: 60 * 60 * 1000,
+            secure: true,
+            sameSite: "strict",
+          });
+        }
         return res.json({ message: "Logged in successfully" });
       }
     }
@@ -174,22 +179,29 @@ adminRouter.post(
   authenticateAdminJWT,
   async (req: Request, res: Response) => {
     try {
-      const { title, description, published, imageUrl, price }: Course =
-        await req.body;
-      const decodedAdmin: decodedAdmin = req.decodedAdmin;
-      const createCourse: CourseWithAdminId = {
-        adminId: decodedAdmin.id,
-        title,
-        description,
-        published,
-        imageUrl,
-        price,
-      };
-      await prisma.course.create({
-        data: createCourse,
-      });
-      await prisma.$disconnect();
-      res.json({ message: "Course created successfully" });
+      const parsedInput = createCourseSchema.safeParse(req.body);
+      if (!parsedInput.success) {
+        return res
+          .status(411)
+          .json({ message: parsedInput.error.issues[0].message });
+      } else {
+        const { title, description, published, imageUrl, price }: Course =
+          parsedInput.data;
+        const decodedAdmin: decodedAdmin = req.decodedAdmin;
+        const createCourse: CourseWithAdminId = {
+          adminId: decodedAdmin.id,
+          title,
+          description,
+          published,
+          imageUrl,
+          price,
+        };
+        await prisma.course.create({
+          data: createCourse,
+        });
+        await prisma.$disconnect();
+        res.json({ message: "Course created successfully" });
+      }
     } catch (error) {
       await prisma.$disconnect();
       console.error(error);
@@ -203,22 +215,29 @@ adminRouter.put(
   authenticateAdminJWT,
   async (req: Request, res: Response) => {
     try {
-      const updatedCourse: CourseFromDB = await req.body;
-      const decodedAdmin: decodedAdmin = req.decodedAdmin;
-      if (decodedAdmin.id === updatedCourse.adminId) {
-        await prisma.course.update({
-          where: {
-            id: updatedCourse.id,
-            adminId: decodedAdmin.id,
-          },
-          data: updatedCourse,
-        });
-        await prisma.$disconnect();
-        return res.json({ message: "Course updated successfully" });
-      } else {
+      const parsedInput = courseFromDBScheam.safeParse(req.body);
+      if (!parsedInput.success) {
         return res
-          .status(403)
-          .json({ message: "The course does not belong to this admin." });
+          .status(411)
+          .json({ message: parsedInput.error.issues[0].message });
+      } else {
+        const updatedCourse: CourseFromDB = parsedInput.data;
+        const decodedAdmin: decodedAdmin = req.decodedAdmin;
+        if (decodedAdmin.id === updatedCourse.adminId) {
+          await prisma.course.update({
+            where: {
+              id: updatedCourse.id,
+              adminId: decodedAdmin.id,
+            },
+            data: updatedCourse,
+          });
+          await prisma.$disconnect();
+          return res.json({ message: "Course updated successfully" });
+        } else {
+          return res
+            .status(403)
+            .json({ message: "The course does not belong to this admin." });
+        }
       }
     } catch (error) {
       await prisma.$disconnect();
