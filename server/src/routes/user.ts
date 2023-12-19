@@ -71,7 +71,7 @@ userRouter.post("/signin", async (req: Request, res: Response) => {
       }
       const isPasswordMatch: boolean = await bcrypt.compare(
         password,
-        userData!.hashedPassword,
+        userData!.hashedPassword
       );
 
       if (!isPasswordMatch) {
@@ -85,18 +85,18 @@ userRouter.post("/signin", async (req: Request, res: Response) => {
           domain: "localhost",
           path: "/",
           maxAge: 60 * 60 * 1000,
-          httpOnly: true,
+          // httpOnly: true,
           secure: true,
           sameSite: "strict",
         });
 
-        res.cookie("userLoggedIn", true, {
-          domain: "localhost",
-          path: "/",
-          maxAge: 60 * 60 * 1000,
-          secure: true,
-          sameSite: "strict",
-        });
+        // res.cookie("userLoggedIn", true, {
+        //   domain: "localhost",
+        //   path: "/",
+        //   maxAge: 60 * 60 * 1000,
+        //   secure: true,
+        //   sameSite: "strict",
+        // });
       }
       return res.json({ message: "Logged in successfully", email });
     }
@@ -125,7 +125,7 @@ userRouter.get(
       console.error(error);
       res.sendStatus(500);
     }
-  },
+  }
 );
 
 userRouter.post("/logout", authenticateUserJWT, async (req, res) => {
@@ -171,7 +171,7 @@ userRouter.get(
       console.error(error);
       res.sendStatus(500);
     }
-  },
+  }
 );
 
 userRouter.post(
@@ -207,7 +207,7 @@ userRouter.post(
       console.error(error);
       res.sendStatus(500);
     }
-  },
+  }
 );
 
 userRouter.get(
@@ -235,5 +235,5 @@ userRouter.get(
       console.error(error);
       res.sendStatus(500);
     }
-  },
+  }
 );
