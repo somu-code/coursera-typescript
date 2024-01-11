@@ -17,5 +17,5 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         <Route path="/signin" element={<Signin />} />
       </Routes>
     </BrowserRouter>
-  </React.StrictMode>
+  </React.StrictMode>,
 );

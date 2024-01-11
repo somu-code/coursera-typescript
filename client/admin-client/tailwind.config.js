@@ -4,13 +4,13 @@
  */
 
 export default {
-	content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
-	theme: {
-		extend: {
-			backgroundImage: {
-				'register-image': "url('./public/register-image.svg')",
-			},
-		},
-	},
-	plugins: [],
+  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
+  theme: {
+    extend: {
+      backgroundImage: {
+        "register-image": "url('./public/register-image.svg')",
+      },
+    },
+  },
+  plugins: [],
 };
