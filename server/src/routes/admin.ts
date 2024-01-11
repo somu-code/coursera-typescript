@@ -20,8 +20,7 @@ adminRouter.post("/signup", async (req: Request, res: Response) => {
   try {
     const parsedInput = signupSchema.safeParse(req.body);
     if (!parsedInput.success) {
-      console.log(parsedInput);
-      return res.status(411).json({ message: "zod" });
+      return res.status(411).json({ message: parsedInput.error.format() });
     } else {
       const { email, password }: { email: string; password: string } =
         parsedInput.data;
