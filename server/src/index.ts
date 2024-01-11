@@ -2,8 +2,8 @@ import express, { Request, Response, Express } from "express";
 import dotenv from "dotenv";
 import path from "path";
 import cookieParser from "cookie-parser";
-import { adminRouter } from "./routes/admin.ts";
-import { userRouter } from "./routes/user.ts";
+import { adminRouter } from "./routes/admin.js";
+import { userRouter } from "./routes/user.js";
 import cors from "cors";
 
 dotenv.config({
@@ -18,7 +18,7 @@ app.use(cookieParser("my-secret"));
 app.use("/admin", adminRouter);
 app.use("/user", userRouter);
 
-app.get("/ping", async (req: Request, res: Response) => {
+app.get("/ping", async (_req: Request, res: Response) => {
   try {
     res.send("pong");
   } catch (error) {

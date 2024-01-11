@@ -20,9 +20,8 @@ adminRouter.post("/signup", async (req: Request, res: Response) => {
   try {
     const parsedInput = signupSchema.safeParse(req.body);
     if (!parsedInput.success) {
-      return res
-        .status(411)
-        .json({ message: parsedInput.error.issues[0].message });
+      console.log(parsedInput);
+      return res.status(411).json({ message: "zod" });
     } else {
       const { email, password }: { email: string; password: string } =
         parsedInput.data;
@@ -55,9 +54,7 @@ adminRouter.post("/signin", async (req: Request, res: Response) => {
   try {
     const parsedInput = signupSchema.safeParse(req.body);
     if (!parsedInput.success) {
-      return res
-        .status(411)
-        .json({ message: parsedInput.error.issues[0].message });
+      return res.status(411).json({ message: "zod" });
     } else {
       const { email, password }: { email: string; password: string } =
         parsedInput.data;
@@ -136,7 +133,7 @@ adminRouter.get(
 adminRouter.post(
   "/logout",
   authenticateAdminJWT,
-  async (req: Request, res: Response) => {
+  async (_req: Request, res: Response) => {
     try {
       res.clearCookie("adminAccessToken");
       res.clearCookie("adminLoggedIn");
@@ -180,9 +177,7 @@ adminRouter.post(
     try {
       const parsedInput = createCourseSchema.safeParse(req.body);
       if (!parsedInput.success) {
-        return res
-          .status(411)
-          .json({ message: parsedInput.error.issues[0].message });
+        return res.status(411).json({ message: "zod" });
       } else {
         const { title, description, published, imageUrl, price }: Course =
           parsedInput.data;
@@ -216,9 +211,7 @@ adminRouter.put(
     try {
       const parsedInput = courseFromDBScheam.safeParse(req.body);
       if (!parsedInput.success) {
-        return res
-          .status(411)
-          .json({ message: parsedInput.error.issues[0].message });
+        return res.status(411).json({ message: "zod" });
       } else {
         const updatedCourse: CourseFromDB = parsedInput.data;
         const decodedAdmin: decodedAdmin = req.decodedAdmin;
@@ -253,9 +246,11 @@ adminRouter.delete(
     try {
       const decodedAdmin: decodedAdmin = req.decodedAdmin;
       const { courseId }: { courseId: number } = await req.body;
-      const currentCourse: CourseFromDB | null = await prisma.course.findUnique({
-        where: { id: courseId },
-      });
+      const currentCourse: CourseFromDB | null = await prisma.course.findUnique(
+        {
+          where: { id: courseId },
+        },
+      );
       if (!currentCourse) {
         return res.status(404).json({ message: "Course does not exists" });
       }
@@ -300,7 +295,7 @@ adminRouter.get(
 adminRouter.get(
   "/all-courses",
   authenticateAdminJWT,
-  async (req: Request, res: Response) => {
+  async (_req: Request, res: Response) => {
     try {
       const courses: CourseFromDB[] = await prisma.course.findMany();
       await prisma.$disconnect();
