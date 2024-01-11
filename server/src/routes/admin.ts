@@ -8,7 +8,6 @@ import {
   CourseFromDB,
   CourseWithAdminId,
 } from "../custom-types/course-types";
-import z from "zod";
 import {
   courseFromDBScheam,
   createCourseSchema,
@@ -27,7 +26,7 @@ adminRouter.post("/signup", async (req: Request, res: Response) => {
     } else {
       const { email, password }: { email: string; password: string } =
         parsedInput.data;
-      const adminData: Admin | null = await prisma.admin.findFirst({
+      const adminData: Admin | null = await prisma.admin.findUnique({
         where: { email: email },
       });
       if (adminData) {
@@ -254,7 +253,7 @@ adminRouter.delete(
     try {
       const decodedAdmin: decodedAdmin = req.decodedAdmin;
       const { courseId }: { courseId: number } = await req.body;
-      const currentCourse: CourseFromDB | null = await prisma.course.findFirst({
+      const currentCourse: CourseFromDB | null = await prisma.course.findUnique({
         where: { id: courseId },
       });
       if (!currentCourse) {
