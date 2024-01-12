@@ -22,8 +22,6 @@ export default function Signin() {
         body: JSON.stringify({ email, password }),
       });
       if (response.ok) {
-        console.log(response.headers.get("userAccessToken"));
-        navigate("/");
       }
       if (response.status === 401 || response.status === 404) {
         setVisible(true);

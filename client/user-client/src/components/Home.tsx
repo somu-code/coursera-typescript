@@ -2,6 +2,7 @@ export default function Home() {
   return (
     <div className="">
       <div className="">
+        <h1 className="text-center text-xl">User</h1>
         <h1 className="text-[#1E0E62] text-center text-7xl font-bold mt-36">
           Course Selling Platform
         </h1>
