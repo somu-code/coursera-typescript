@@ -3,12 +3,12 @@ export default function Home() {
     <div className="">
       <div className="">
         <h1 className="text-[#1E0E62] text-center text-7xl font-bold mt-36">
-          Course Selling Platform
+          Learn Without Limits
         </h1>
         <p className="text-[#151439] text-center text-xl font-medium max-w-xl mx-auto mt-12">
-          We made it so beautiful and simple. It combines courses, adds courses,
-          updates and deletes. So you can focus on the teaching part. It is
-          definitely the tool you need in your collection!
+          Start, switch, or advance your career with more than 5,800 courses,
+          Professional Certificates, and degrees from world-class universities
+          and companies.
         </p>
       </div>
     </div>

@@ -69,15 +69,14 @@ userRouter.post("/signin", async (req: Request, res: Response) => {
           userData;
         const userPayload: userPayload = { id, email, role };
         const userToken: string = generateUserJWT(userPayload);
+        // res.setHeader("Set-Cookie", [`userAccessToken=${userToken}`])
         res.cookie("userAccessToken", userToken, {
           domain: "localhost",
           path: "/",
           maxAge: 60 * 60 * 1000,
-          secure: true,
-          sameSite: "strict",
         });
       }
-      return res.json({ message: "Logged in successfully", email });
+      return res.json({ message: "Logged in successfully" });
     }
   } catch (error) {
     await prisma.$disconnect();
