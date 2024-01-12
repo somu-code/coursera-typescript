@@ -79,7 +79,8 @@ adminRouter.post("/signin", async (req: Request, res: Response) => {
             email,
             name,
             role,
-          }: { id: number; email: string; name: string | null; role: string } = adminData;
+          }: { id: number; email: string; name: string | null; role: string } =
+            adminData;
           const adminPayload: adminPayload = { id, email, name, role };
           const adminToken: string = generateAdminJWT(adminPayload);
           res.cookie("adminAccessToken", adminToken, {
@@ -116,7 +117,7 @@ adminRouter.get(
         id: adminData?.id,
         email: adminData?.email,
         name: adminData?.name,
-        role: adminData?.role
+        role: adminData?.role,
       });
     } catch (error) {
       await prisma.$disconnect();
@@ -241,14 +242,13 @@ adminRouter.delete(
       const decodedAdmin: decodedAdmin = req.decodedAdmin;
       const parsedInput = courseIdSchema.safeParse(req.body);
       if (!parsedInput.success) {
-        return res.status(411).json({ message: parsedInput.error.format() })
+        return res.status(411).json({ message: parsedInput.error.format() });
       } else {
         const { courseId } = parsedInput.data;
-        const currentCourse: CourseFromDB | null = await prisma.course.findUnique(
-          {
+        const currentCourse: CourseFromDB | null =
+          await prisma.course.findUnique({
             where: { id: courseId },
-          },
-        );
+          });
         if (!currentCourse) {
           return res.status(404).json({ message: "Course does not exists" });
         }

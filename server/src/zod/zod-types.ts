@@ -34,5 +34,5 @@ export const purchaseCourseSchema = z.object({
 });
 
 export const courseIdSchema = z.object({
-  courseId: z.number().min(1, "CourseId can't be less than 1")
-})
+  courseId: z.number().min(1, "CourseId can't be less than 1"),
+});
