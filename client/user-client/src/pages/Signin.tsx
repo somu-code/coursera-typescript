@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { serverApi } from "../serverApi";
 import { Link } from "react-router-dom";
+import base64UrlDecoded from "../util/DecodeUrl";
 
 export default function Signin() {
   const navigate = useNavigate();
@@ -22,6 +23,13 @@ export default function Signin() {
         body: JSON.stringify({ email, password }),
       });
       if (response.ok) {
+        const cookieFromDocument = document.cookie;
+        const userAccessCookie = cookieFromDocument.split("=");
+        const userJWT = userAccessCookie[1];
+        const [header, payload, signature] = userJWT.split(".");
+        const decodedPayloadData = JSON.parse(base64UrlDecoded(payload));
+        console.log(decodedPayloadData);
+        navigate("/");
       }
       if (response.status === 401 || response.status === 404) {
         setVisible(true);
