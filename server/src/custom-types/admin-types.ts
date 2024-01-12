@@ -9,5 +9,6 @@ export type Admin = {
 export type adminPayload = {
   id: number;
   email: string;
+  name: string | null;
   role: string;
 };
