@@ -30,5 +30,9 @@ export const courseFromDBScheam = courseSchemaWithAdminId.extend({
 });
 
 export const purchaseCourseSchema = z.object({
-  courseId: z.number().min(1, "Course ID can't be less than 1"),
+  courseId: z.number().min(1, "CourseId can't be less than 1"),
+});
+
+export const courseIdSchema = z.object({
+  courseId: z.number().min(1, "CourseId can't be less than 1"),
 });

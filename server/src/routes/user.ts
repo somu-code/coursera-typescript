@@ -3,26 +3,16 @@ import { prisma } from "../prismaClient";
 import bcrypt from "bcrypt";
 import { authenticateUserJWT, generateUserJWT } from "../jwt-auth/user-auth";
 import { User, userPayload } from "../custom-types/user-types";
-import { Course, CourseFromDB } from "../custom-types/course-types";
+import { CourseFromDB } from "../custom-types/course-types";
 import { purchaseCourseSchema, signupSchema } from "../zod/zod-types";
 
 export const userRouter: Router = Router();
-
-// userRouter.get("/", async (req: Request, res: Response) => {
-//   try {
-//     res.status(200).send("<h1>User api</h1>");
-//   } catch (error) {
-//     res.sendStatus(500);
-//   }
-// });
 
 userRouter.post("/signup", async (req: Request, res: Response) => {
   try {
     const parsedInput = signupSchema.safeParse(req.body);
     if (!parsedInput.success) {
-      return res
-        .status(411)
-        .json({ message: parsedInput.error.issues[0].message });
+      return res.status(411).json({ message: "zod" });
     } else {
       const { email, password }: { email: string; password: string } =
         parsedInput.data;
@@ -56,9 +46,7 @@ userRouter.post("/signin", async (req: Request, res: Response) => {
   try {
     const parsedInput = signupSchema.safeParse(req.body);
     if (!parsedInput.success) {
-      return res
-        .status(411)
-        .json({ message: parsedInput.error.issues[0].message });
+      return res.status(411).json({ message: "zod" });
     } else {
       const { email, password }: { email: string; password: string } =
         parsedInput.data;
@@ -85,18 +73,9 @@ userRouter.post("/signin", async (req: Request, res: Response) => {
           domain: "localhost",
           path: "/",
           maxAge: 60 * 60 * 1000,
-          // httpOnly: true,
           secure: true,
           sameSite: "strict",
         });
-
-        // res.cookie("userLoggedIn", true, {
-        //   domain: "localhost",
-        //   path: "/",
-        //   maxAge: 60 * 60 * 1000,
-        //   secure: true,
-        //   sameSite: "strict",
-        // });
       }
       return res.json({ message: "Logged in successfully", email });
     }
@@ -128,7 +107,7 @@ userRouter.get(
   },
 );
 
-userRouter.post("/logout", authenticateUserJWT, async (req, res) => {
+userRouter.post("/logout", authenticateUserJWT, async (_req, res) => {
   try {
     res.clearCookie("userAccessToken");
     res.clearCookie("userLoggedIn");
@@ -161,7 +140,7 @@ userRouter.delete("/delete", authenticateUserJWT, async (req, res) => {
 userRouter.get(
   "/all-courses",
   authenticateUserJWT,
-  async (req: Request, res: Response) => {
+  async (_req: Request, res: Response) => {
     try {
       const courseData: CourseFromDB[] = await prisma.course.findMany();
       await prisma.$disconnect();
@@ -181,13 +160,11 @@ userRouter.post(
     try {
       const parsedInput = purchaseCourseSchema.safeParse(req.body);
       if (!parsedInput.success) {
-        return res
-          .status(411)
-          .json({ message: parsedInput.error.issues[0].message });
+        return res.status(411).json({ message: "zod" });
       } else {
         const { courseId }: { courseId: number } = parsedInput.data;
         const decodedUser: decodedUser = req.decodedUser;
-        const result = await prisma.userCourses.create({
+        await prisma.userCourses.create({
           data: {
             user: {
               connect: { id: decodedUser.id },

@@ -18,7 +18,7 @@ app.use(cookieParser("my-secret"));
 app.use("/admin", adminRouter);
 app.use("/user", userRouter);
 
-app.get("/ping", async (req: Request, res: Response) => {
+app.get("/ping", async (_req: Request, res: Response) => {
   try {
     res.send("pong");
   } catch (error) {
