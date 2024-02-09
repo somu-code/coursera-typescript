@@ -1,4 +1,4 @@
-import { ReactNode, useState } from "react"
+import { ReactNode, useState } from "react";
 import { UserContext, UserContextType } from "./UserContext";
 
 export function UserContextProvider({ children }: { children: ReactNode }) {
@@ -7,5 +7,5 @@ export function UserContextProvider({ children }: { children: ReactNode }) {
     <UserContext.Provider value={{ user, setUser }}>
       {children}
     </UserContext.Provider>
-  )
+  );
 }
