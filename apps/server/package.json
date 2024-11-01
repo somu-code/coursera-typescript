@@ -5,7 +5,6 @@
   "main": "index.js",
   "types": "module",
   "scripts": {
-    "format": "prettier --write \"**/*.{js,jsx,mjs,ts,tsx,mts,md}\"",
     "dev": "nodemon",
     "typecheck": "tsc --noEmit",
     "build": "tsc -b",
@@ -33,7 +32,6 @@
     "@types/jsonwebtoken": "^9.0.5",
     "@types/node": "^20.11.0",
     "nodemon": "^3.0.1",
-    "prettier": "^3.1.1",
     "prisma": "^5.6.0",
     "ts-node": "^10.9.1",
     "typescript": "^5.3.3"
