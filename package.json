@@ -8,7 +8,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "format": "prettier --write \"**/*.{html,css,js,jsx,ts,tsx,md}\""
+    "format": "prettier --write \"**/*.{html,css,js,jsx,ts,tsx,md}\"",
+    "dev": "pnpm --filter admin-client --filter server --filter user-client dev",
+    "migrate": "pnpm --filter server migrate",
+    "generate": "pnpm --filter server generate"
   },
   "keywords": [],
   "author": "",
